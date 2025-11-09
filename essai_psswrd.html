@@ -46,7 +46,8 @@
       if (val === CORRECT_PASSWORD) {
         document.body.style.background = "radial-gradient(circle, #001 0%, #000 80%)";
         authSection.style.display = "none";
-        transmissionSection.classList.add("visible");
+        transmissionSection.classList.remove("hidden");
+	transmissionSection.classList.add("fade-in");
         setTimeout(() => {
           audio.play().catch(() => {});
         }, 800);
