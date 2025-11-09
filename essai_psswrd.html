@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Transmission Agent 404 – Accès Restreint</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+    body {
+      margin: 0;
+      height: 100vh;
+      background-color: #000;
+      color: #0ff;
+      font-family: 'Share Tech Mono', monospace;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      transition: background 1s ease;
+    }
+
+    h1 {
+      font-size: 2em;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      text-shadow: 0 0 8px #0ff;
+      animation: flicker 2s infinite;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    @keyframes flicker {
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {opacity: 1;}
+      20%, 24%, 55% {opacity: 0.3;}
+    }
+
+    /* Zone mot de passe */
+    .access-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input {
+      background: transparent;
+      border: 1px solid #0ff;
+      color: #0ff;
+      font-family: inherit;
+      font-size: 1.2em;
+      padding: 10px;
+      text-align: center;
+      width: 200px;
+      border-radius: 8px;
+      outline: none;
+      text-transform: uppercase;
+    }
+
+    input::placeholder {
+      color: #099;
+    }
+
+    button {
+      background: rgba(0,255,255,0.2);
+      border: 1px solid #0ff;
+      color: #0ff;
+      font-family: inherit;
+      font-size: 1em;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: rgba(0,255,255,0.4);
+      box-shadow: 0 0 10px #0ff;
+    }
+
+    #accessDenied {
+      color: #f00;
+      margin-top: 10px;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
+    /* Zone lecteur */
+    .player-container {
+      background: rgba(0, 255, 255, 0.1);
+      border: 1px solid #0ff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+      width: 320px;
+      text-align: center;
+      animation: pulse 2s infinite alternate;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    @keyframes pulse {
+      from { box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }
+      to { box-shadow: 0 0 25px rgba(0, 255, 255, 0.6); }
+    }
+
+    audio {
+      width: 100%;
+      outline: none;
+      filter: drop-shadow(0 0 10px #0ff);
+      margin-bottom: 1rem;
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 15px;
+      font-size: 0.8em;
+      color: #099;
+      opacity: 0.8;
+    }
+
+    /* Effet apparition lecteur */
+    .visible {
+      opacity: 1 !important;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="authSection" class="access-container">
+    <h1>Canal 404Δ – Accès Restreint</h1>
+    <input type="password" id="passwordInput" placeholder="CODE D'ACCÈS" />
+    <button id="unlockBtn">Déverrouiller</button>
+    <div id="accessDenied">⛔ Code incorrect</div>
+  </div>
+
+  <div id="transmissionSection" class="player-container">
+    <p>Canal : <strong>404-Δ</strong></p>
+    <audio id="audio" controls preload="auto">
+      <source src="assets/transmission3.mp3" type="audio/mpeg" />
+      Votre navigateur ne supporte pas la lecture audio.
+    </audio>
+  </div>
+
+  <div class="footer">Bureau de Sauvegarde Temporelle – 2050</div>
+
+  <script>
+    const unlockBtn = document.getElementById('unlockBtn');
+    const input = document.getElementById('passwordInput');
+    const denied = document.getElementById('accessDenied');
+    const authSection = document.getElementById('authSection');
+    const transmissionSection = document.getElementById('transmissionSection');
+    const audio = document.getElementById('audio');
+
+    const CORRECT_PASSWORD = "ECLIPSE"; // 🔑 Mot de passe à modifier
+
+    unlockBtn.addEventListener('click', checkPassword);
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') checkPassword();
+    });
+
+    function checkPassword() {
+      const val = input.value.trim().toUpperCase();
+      if (val === CORRECT_PASSWORD) {
+        document.body.style.background = "radial-gradient(circle, #001 0%, #000 80%)";
+        authSection.style.display = "none";
+        transmissionSection.classList.add("visible");
+        setTimeout(() => {
+          audio.play().catch(() => {});
+        }, 800);
+      } else {
+        denied.style.opacity = 1;
+        input.value = "";
+        setTimeout(() => denied.style.opacity = 0, 2000);
+      }
+    }
+  </script>
+</body>
+</html>
