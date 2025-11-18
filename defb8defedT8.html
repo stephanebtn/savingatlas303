@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Transmission – Fragment visuel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="intro">
+    <p id="introText">Connexion au canal 404Δ...<br><small>(Appuyez pour activer)</small></p>
+    <div class="glitch-lines"></div>
+  </div>
+
+  <h1 id="title" style="opacity:0;">Canal 404Δ – Fragment visuel</h1>
+
+  <div class="player-container" id="mainContent" style="opacity:0;">
+    <p>Fragment reçu :</p>
+    <img src="assets/defb8defedT8.png" alt="Fragment visuel" style="max-width:100%; border-radius:12px;">
+  </div>
+
+  <div class="footer">Bureau de Sauvegarde Temporelle – 2050</div>
+
+  <script>
+    const intro = document.getElementById('intro');
+    const mainContent = document.getElementById('mainContent');
+    const title = document.getElementById('title');
+
+    intro.addEventListener("click", () => {
+      intro.style.opacity = 0;
+      setTimeout(() => { intro.style.display = "none"; }, 1000);
+      title.style.transition = "opacity 1s";
+      mainContent.style.transition = "opacity 1s";
+      title.style.opacity = 1;
+      mainContent.style.opacity = 1;
+    });
+  </script>
+</body>
+</html>
