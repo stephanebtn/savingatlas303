@@ -304,7 +304,7 @@ function writeConsole(text, fast = false, onFinish = null){
     function success(key){
       statusEl.className = "status ok";
       statusEl.style.display = "flex";
-      statusEl.textContent = "TERME AUTHENTIFIÉ — PRÉPARATION OUVERTURE FRAGMENT";
+      statusEl.textContent = "TERME AUTHENTIFIÉ - PRÉPARATION OUVERTURE FRAGMENT";
       play(sOk);
       // show final console then redirect
 
@@ -318,14 +318,14 @@ function writeConsole(text, fast = false, onFinish = null){
     function fail(key){
       statusEl.className = "status err";
       statusEl.style.display = "flex";
-      statusEl.textContent = "ERREUR LEXICALE — ANOMALIE HORS-RÉFÉRENTIEL";
+      statusEl.textContent = "ERREUR LEXICALE - ANOMALIE HORS-RÉFÉRENTIEL";
       play(sErr);
       // shake effect via CSS transform
       const dev = document.querySelector('.device');
       dev.style.animation = "shake 0.28s";
       setTimeout(()=> dev.style.animation = "", 1000);
 
-      writeConsole("[ERREUR] " + key + " — AUCUNE CORRESPONDANCE\n[ÉTAT] Remise à zéro en cours...");
+      writeConsole("[ERREUR] " + key + " - AUCUNE CORRESPONDANCE\n[ÉTAT] Remise à zéro en cours...");
       setTimeout(()=>{
         statusEl.style.display = "none";
         writeConsole("[ÉTAT] Scanner prêt.\n");
