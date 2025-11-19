@@ -235,20 +235,33 @@
     const sScan = document.getElementById('soundScan');
 
     // helper: write with small type effect (fast)
-    function writeConsole(text, fast = false){
-      const base = fast ? 10 : 30;
-      consoleEl.textContent = '';
-      let i=0;
-      const t = setInterval(()=> {
-        consoleEl.textContent += text[i] || '';
-        i++;
-        if(i>text.length) clearInterval(t);
-      }, base);
+let currentInterval = null; // <-- Ajouter cette variable globale
+
+function writeConsole(text, fast = false, onFinish = null){
+  const base = fast ? 10 : 30;
+  
+  // Annuler l'intervalle précédent s'il existe
+  if(currentInterval) {
+    clearInterval(currentInterval);
+    currentInterval = null;
+  }
+  
+  consoleEl.textContent = '';
+  let i = 0;
+  currentInterval = setInterval(() => {
+    consoleEl.textContent += text[i] || '';
+    i++;
+    if(i > text.length){
+      clearInterval(currentInterval);
+      currentInterval = null;
+      if(onFinish) onFinish();
     }
+  }, base);
+}
 
     // generate random garbage characters to display while scanning
     function randomGarbage(len=80){
-      const chars = "!@#$%^&*()_+{}[]<>?/|\\~-=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const chars = "!@#$%^&*()_+{}[]<>?/|~-=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
       let s='';
       for(let i=0;i<len;i++){
         s += chars.charAt(Math.floor(Math.random()*chars.length));
@@ -294,12 +307,13 @@
       statusEl.textContent = "TERME AUTHENTIFIÉ — PRÉPARATION OUVERTURE FRAGMENT";
       play(sOk);
       // show final console then redirect
-      writeConsole("[TERME] " + key + " — AUTHENTIFICATION COMPLÉTÉE\n[ROUTE] Ouverture du fragment...");
-      setTimeout(()=> {
-        // redirect
+
+    writeConsole("[TERME] " + key + " - AUTHENTIFICATION COMPLÉTÉE\n[ROUTE] Ouverture du fragment...", false, () => {
+    setTimeout(() => {
         window.location.href = ROUTES[key];
-      }, 2500);
-    }
+    }, 500);
+   });
+ }
 
     function fail(key){
       statusEl.className = "status err";
