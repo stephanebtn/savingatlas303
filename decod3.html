@@ -175,10 +175,9 @@
     <div class="device" role="application" aria-label="Machine d'Interprétation Lexicale BST-404">
       <div class="header">
         <div class="title">
-          <div style="font-weight:800;font-size:0.86rem;color:#120b09;padding:6px 8px;border-radius:6px;background:linear-gradient(180deg,var(--warm),#d5a76a);">BST-404</div>
           Machine d'Interprétation Lexicale
         </div>
-        <div class="subtitle">Machine non homologuée — Manuels de bord restreints.</div>
+        <div class="subtitle">Machine non homologuée - Manuels de bord restreints.</div>
       </div>
 
       <div class="screen" id="screen" aria-live="polite">
@@ -237,7 +236,7 @@
 
     // helper: write with small type effect (fast)
     function writeConsole(text, fast = false){
-      const base = fast ? 8 : 26;
+      const base = fast ? 10 : 30;
       consoleEl.textContent = '';
       let i=0;
       const t = setInterval(()=> {
@@ -299,7 +298,7 @@
       setTimeout(()=> {
         // redirect
         window.location.href = ROUTES[key];
-      }, 1500);
+      }, 2500);
     }
 
     function fail(key){
@@ -310,13 +309,13 @@
       // shake effect via CSS transform
       const dev = document.querySelector('.device');
       dev.style.animation = "shake 0.28s";
-      setTimeout(()=> dev.style.animation = "", 300);
+      setTimeout(()=> dev.style.animation = "", 1000);
 
       writeConsole("[ERREUR] " + key + " — AUCUNE CORRESPONDANCE\n[ÉTAT] Remise à zéro en cours...");
       setTimeout(()=>{
         statusEl.style.display = "none";
         writeConsole("[ÉTAT] Scanner prêt.\n");
-      }, 1600);
+      }, 2500);
     }
 
     // wire
