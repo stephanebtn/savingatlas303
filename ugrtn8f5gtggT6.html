@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Transmission Audio – Agent 404</title>
+	<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="container">
+
+    <!-- Intro -->
+    <div id="intro">
+      <p id="introText">Connexion au canal 404Δ...<br><small>(Appuyez pour activer)</small></p>
+      <div class="glitch-lines"></div>
+      <audio id="introSound" src="assets/signal.mp3" preload="auto"></audio>
+    </div>
+
+    <!-- Transmission -->
+<div class="terminal">
+    <h1 id="title">Transmission entrante</h1>
+
+    <div class="player-container" id="mainContent">
+      <p>Canal : <strong>404-Δ</strong></p>
+      <audio id="audio" controls preload="auto">
+        <source src="assets/ugrtn8f5gtggT6.mp3" type="audio/mpeg" />
+        Votre navigateur ne supporte pas la lecture audio.
+      </audio>
+    </div>
+
+    <!-- Consignes -->
+    <div id="endMessage" class="hidden" aria-live="polite">
+      <h3>Vous avez trouvé le 1er Fragment !</h3>
+    </div>
+</div>
+    <div class="footer">Bureau de Sauvegarde Temporelle – 2050</div>
+  </div>
+
+  <script>
+    const intro = document.getElementById('intro');
+    const introSound = document.getElementById('introSound');
+    const mainContent = document.getElementById('mainContent');
+    const title = document.getElementById('title');
+    const audioMain = document.getElementById('audio');
+    const endMessage = document.getElementById('endMessage');
+
+    let introPlayed = false;
+
+    intro.addEventListener("click", async () => {
+      if (introPlayed) return;
+      introPlayed = true;
+
+      try {
+        await introSound.play();
+      } catch (err) {
+        console.warn("Lecture intro bloquée :", err);
+      }
+
+      introSound.addEventListener("ended", () => {
+        intro.style.opacity = 0;
+        title.style.opacity = 1;
+        setTimeout(() => {
+          intro.style.display = "none";
+          mainContent.style.opacity = 1;
+          audioMain.play().catch(e => console.warn("Lecture automatique bloquée :", e));
+        }, 1500);
+      });
+    });
+
+    audioMain.addEventListener("ended", () => {
+      setTimeout(() => {
+        endMessage.classList.remove('hidden');
+requestAnimationFrame(() => {
+  endMessage.classList.add('fade-in');
+});
+      }, 1000);
+    });
+
+  </script>
+</body>
+</html>
