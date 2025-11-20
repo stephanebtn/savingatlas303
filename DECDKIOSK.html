@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Machine d'Interprétation Lexicale — BST-404</title>
+
+  <style>
+  :root{
+  --bg:#000;
+  --cyan:#0ff;
+  --cyan-dim:#099;
+  --scan:#0ff;
+}
+    html,body{
+  height:100%;
+  margin:0;
+  font-family: "Share Tech Mono", monospace;
+  background:#000;
+  color:var(--cyan);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+    /* wrapper & device centered */
+    .wrapper{ width:100%; height:100vh; display:flex; align-items:center; justify-content:center; }
+    .device {
+  width:92vw;
+  max-width:520px;
+  background: rgba(0,255,255,0.05);
+  border:1px solid var(--cyan);
+  border-radius:12px;
+  padding:18px;
+  box-shadow:0 0 18px rgba(0,255,255,0.3),
+             inset 0 0 12px rgba(0,255,255,0.15);
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  align-items:center;
+}
+
+    .header {
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:6px;
+    }
+    .title{
+  font-size:1.1rem;
+  color:var(--cyan);
+  text-shadow:0 0 8px var(--cyan);
+  letter-spacing:2px;
+  text-transform:uppercase;
+}
+    .subtitle{
+  font-size:0.8rem;
+  color:var(--cyan-dim);
+  text-shadow:0 0 4px var(--cyan-dim);
+}
+
+   .screen{
+  width:100%;
+  background:rgba(0,255,255,0.08);
+  border:1px solid var(--cyan);
+  border-radius:10px;
+  padding:12px;
+  min-height:140px;
+  color:var(--cyan);
+  font-size:14px;
+  line-height:1.4;
+  position:relative;
+  box-shadow:0 0 18px rgba(0,255,255,0.25);
+}
+
+    /* scanlines overlay */
+    .screen::after{
+  content:"";
+  position:absolute; inset:0;
+  background-image:repeating-linear-gradient(
+    0deg,
+    rgba(0,255,255,0.12) 0px,
+    rgba(0,255,255,0.12) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events:none;
+  mix-blend-mode:overlay;
+}
+
+    .console{
+  white-space:pre-wrap;
+  overflow:hidden;
+  max-height:220px;
+  text-shadow:0 0 6px var(--cyan);
+}
+
+    .controls {
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:center;
+      margin-top:6px;
+    }
+
+    input[type="text"]{
+  width:86%;
+  padding:12px;
+  border-radius:10px;
+  background:transparent;
+  border:1px solid var(--cyan);
+  color:var(--cyan);
+  font-size:16px;
+  text-transform:uppercase;
+  text-align:center;
+  outline:none;
+  box-shadow:0 0 12px rgba(0,255,255,0.3);
+}
+input[type="text"]::placeholder{
+  color:var(--cyan-dim);
+}
+    .row {
+      width:100%;
+      display:flex;
+      justify-content:center;
+      gap:10px;
+    }
+
+    button{
+  padding:10px 16px;
+  border-radius:10px;
+  background:rgba(0,255,255,0.12);
+  border:1px solid var(--cyan);
+  color:var(--cyan);
+  font-weight:700;
+  cursor:pointer;
+  font-size:15px;
+  text-shadow:0 0 6px var(--cyan);
+  box-shadow:0 0 10px rgba(0,255,255,0.4);
+}
+
+button:hover{
+  background:rgba(0,255,255,0.25);
+  box-shadow:0 0 12px var(--cyan);
+}
+
+    .status{
+  width:88%;
+  text-align:center;
+  padding:8px 10px;
+  border-radius:8px;
+  font-size:13px;
+}
+
+.status.ok{
+  color:var(--cyan);
+  background:rgba(0,255,255,0.12);
+  text-shadow:0 0 6px var(--cyan);
+}
+
+.status.err{
+  color:#f00;
+  background:rgba(255,0,0,0.1);
+  text-shadow:0 0 6px #f00;
+}
+
+   .footer{
+  width:100%;
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  color:var(--cyan-dim);
+  border-top:1px solid rgba(0,255,255,0.2);
+  padding-top:6px;
+  margin-top:6px;
+  text-shadow:0 0 4px var(--cyan-dim);
+}
+
+    .ornament {
+      width:76px; height:56px; border-radius:8px; overflow:hidden;
+      display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.06);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .ornament img{ max-width:72px; max-height:48px; opacity:0.95; }
+
+    /* small shake */
+    @keyframes shake { 0%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(2px)}100%{transform:translateX(0)} }
+
+    @media (min-width:680px){
+      .device{ max-width:480px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="device" role="application" aria-label="Machine d'Interprétation Lexicale BST-404">
+      <div class="header">
+        <div class="title">
+          Machine d'Interprétation Lexicale
+        </div>
+        <div class="subtitle">Machine non homologuée - Manuels de bord restreints.</div>
+      </div>
+
+      <div class="screen" id="screen" aria-live="polite">
+        <div class="console" id="console">
+[BOOT] Initialisation du sous-système BST-404...
+[BOOT] Chargement du dictionnaire lexical...
+[BOOT] Chargement de l'interpréteur sémantique...
+[BOOT] Synchronisation temporelle : stable
+[ÉTAT] Scanner prêt.
+        </div>
+      </div>
+
+      <div class="controls">
+        <div style="display:flex;gap:8px;align-items:center;">
+            <div style="font-size:13px;color:var(--muted)">Saisir un mot-clé connu par le dispositif</div>
+        </div>
+
+        <div class="row">
+          <input id="decodeInput" type="text" placeholder="ENTRER LE MOT-CLÉ" autocomplete="off" />
+        </div>
+        <div class="row">
+          <button id="decodeBtn">DÉCODER</button>
+        </div>
+
+        <div id="status" class="status" role="status" aria-live="polite"></div>
+      </div>
+
+      <div class="footer">
+        <div> Sous-système BST-404 </div>
+        <div> Firmware v1.4-ht </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- sons : place tes fichiers dans assets/ok.mp3, assets/error.mp3, assets/scan.mp3 -->
+  <audio id="soundOk" src="assets/ok.mp3" preload="auto"></audio>
+  <audio id="soundError" src="assets/error.mp3" preload="auto"></audio>
+  <audio id="soundScan" src="assets/scan.mp3" preload="auto"></audio>
+	<script src="qrcode.min.js"></script>
+  <script>
+let qrTimeout = null;
+
+  // ====== ROUTES (mot -> page) ======
+// Pour QRCODE → mettre URL ABSOLUE
+const ROUTES = {
+  "CECILE":"https://stephanebtn.github.io/savingatlas303/anniv0845.html",
+  "ANNIVERSAIRE":"https://stephanebtn.github.io/savingatlas303/anniv0956.html"
+};
+
+// UI
+const input = document.getElementById('decodeInput');
+const btn = document.getElementById('decodeBtn');
+const consoleEl = document.getElementById('console');
+const statusEl = document.getElementById('status');
+
+// audio
+const sOk = document.getElementById('soundOk');
+const sErr = document.getElementById('soundError');
+const sScan = document.getElementById('soundScan');
+
+let currentInterval = null;
+
+// write effect
+function writeConsole(text, fast = false, onFinish = null){
+  const base = fast ? 10 : 30;
+  if(currentInterval){ clearInterval(currentInterval); }
+  consoleEl.textContent = '';
+  let i = 0;
+  currentInterval = setInterval(()=>{
+    consoleEl.textContent += text[i] || "";
+    i++;
+    if(i>text.length){
+      clearInterval(currentInterval);
+      currentInterval = null;
+      if(onFinish) onFinish();
+    }
+  }, base);
+}
+
+// random garbage
+function randomGarbage(len = 80){
+  const chars = "!@#$%^&*()_+{}[]<>?/|~-=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let s = "";
+  for(let i=0;i<len;i++) s += chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+
+function play(audio){
+  if(!audio) return;
+  try{
+    audio.currentTime = 0;
+    audio.play().catch(()=>{});
+  }catch(e){}
+}
+
+// === Scan + Analyse ===
+function analyseWord(word){
+  writeConsole("[ANALYSE] Interprétation lexicale en cours...\n[CORR] " + randomGarbage(64));
+  play(sScan);
+
+  let pct = 4;
+  const tick = setInterval(()=>{
+    pct += Math.floor(Math.random()*10)+4;
+    if(pct>98) pct = 99;
+    consoleEl.textContent = "[ANALYSE] Interprétation lexicale en cours...\n[CORR] " + pct + "%";
+  }, 260);
+
+  setTimeout(()=>{
+    clearInterval(tick);
+    const key = word.trim().toUpperCase();
+    if(ROUTES[key]) success(key);
+    else fail(key);
+  }, 1600);
+}
+
+// ===== SUCCESS with QR =====
+function success(key){
+  statusEl.className = "status ok";
+  statusEl.style.display = "flex";
+  statusEl.textContent = "TERME AUTHENTIFIÉ — GÉNÉRATION DU QRCODE";
+  play(sOk);
+
+  // Stoppe tout intervalle d’écriture
+  if(currentInterval){
+     clearInterval(currentInterval);
+     currentInterval = null;
+  }
+
+  // Écrit le message de pre-QRCODE
+  writeConsole(
+    "[TERME] " + key + " — AUTHENTIFICATION VALIDÉE\n" +
+    "[QRCODE] Fragment encodé…",
+    false,
+    () => {
+      // Une fois l’écriture finie, on affiche le QR
+      setTimeout(() => {
+
+        // IMPORTANT : QRCODE dans un conteneur séparé
+        consoleEl.innerHTML =
+          "<div id='qrWrap' style='display:flex;justify-content:center;margin:10px 0;'></div>" +
+          "\n[SCANNER] Présentez un appareil compatible.\n" +
+          "[TEMPS] Retour automatique dans 30 secondes…";
+
+        let qrDiv = document.getElementById('qrWrap');
+
+        new QRCode(qrDiv, {
+          text: ROUTES[key],
+          width: 190,
+          height: 190,
+          colorDark: "#0ff",
+          colorLight: "#000",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+
+        // 🔥 On empêche writeConsole de toucher au QR code
+        currentInterval = null;
+
+       // ----- retour automatique avec annulation de l'ancien timer -----
+if (qrTimeout) {
+    clearTimeout(qrTimeout);
+    qrTimeout = null;
+}
+
+qrTimeout = setTimeout(() => {
+    statusEl.style.display = "none";
+    writeConsole("[ÉTAT] Scanner prêt.\n");
+    qrTimeout = null;
+}, 30000);
+
+      }, 250); 
+    }
+  );
+}
+// ===== FAIL =====
+function fail(key){
+  statusEl.className = "status err";
+  statusEl.style.display = "flex";
+  statusEl.textContent = "ERREUR LEXICALE — AUCUNE CORRESPONDANCE";
+  play(sErr);
+
+  const dev = document.querySelector('.device');
+  dev.style.animation = "shake 0.28s";
+  setTimeout(()=> dev.style.animation="", 300);
+
+  writeConsole("[ERREUR] " + key + " — TERMINE INCONNU\n[RESET] Remise à zéro…");
+
+  setTimeout(()=>{
+    statusEl.style.display = "none";
+    writeConsole("[ÉTAT] Scanner prêt.\n");
+  }, 2500);
+}
+
+// ===== EVENTS =====
+btn.addEventListener('click', ()=>{
+  const v = input.value || "";
+  if(!v.trim()){
+    statusEl.className = "status err";
+    statusEl.style.display = "flex";
+    statusEl.textContent = "ERREUR — AUCUN TERME FOURNI";
+    play(sErr);
+
+    const dev = document.querySelector('.device');
+    dev.style.animation = "shake 0.28s";
+    setTimeout(()=> dev.style.animation="", 300);
+
+    writeConsole("[ERREUR] Remise à zéro…");
+    setTimeout(()=>{
+      statusEl.style.display="none";
+      writeConsole("[ÉTAT] Scanner prêt.\n");
+    },1800);
+    return;
+  }
+  analyseWord(v);
+});
+
+input.addEventListener('keypress',(e)=>{
+  if(e.key === "Enter") btn.click();
+});
+
+// Boot
+window.addEventListener('load', ()=>{
+  input.focus();
+  const bootText =
+    "[BOOT] Initialisation du sous-système BST-404...\n" +
+    "[BOOT] Chargement du dictionnaire lexical...\n" +
+    "[BOOT] Interpréteur sémantique opérationnel...\n" +
+    "[BOOT] Synchronisation temporelle : OK\n" +
+    "[ÉTAT] Scanner prêt.\n";
+  writeConsole(bootText, true);
+});
+  </script>
+
+</body>
+</html>
