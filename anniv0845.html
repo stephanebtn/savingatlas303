@@ -22,6 +22,34 @@
   <div class="footer">Bureau de Sauvegarde Temporelle – 2050</div>
 
   <script>
+// === CONFIG ===
+// 📌 Ton numéro WhatsApp
+const PHONE = "+33668666240";
+// 📌 Ta clé CallMeBot
+const APIKEY = "8941906";
+
+// === Description lisible du fragment ===
+// ⚠️ A personnaliser pour chaque fichier
+const fragment = "Fragment 4 (anniv cécile)";
+
+// === Détection de l’équipe via l'URL ===
+// (ex : .../fragment.html?team=A)
+const params = new URLSearchParams(window.location.search);
+const team = params.get("team") || "UNKNOWN";
+
+// === Envoi WhatsApp via ton Worker ===
+if (team !== "UNKNOWN") {
+
+    const msg = encodeURIComponent(
+        `TEAM ${team} a trouvé ${fragment}`
+    );
+
+    // ⚠️ Attention : PHONE / APIKEY = majuscules, comme définis plus haut
+    fetch(`https://damp-meadow-3b23.stephane-btn.workers.dev?phone=${PHONE}&apikey=${APIKEY}&text=${msg}`)
+        .catch(()=>{ /* on ignore les erreurs CORS, normal */ });
+}
+
+
     const intro = document.getElementById('intro');
     const mainContent = document.getElementById('mainContent');
     const title = document.getElementById('title');
@@ -50,4 +78,3 @@
   </script>
 </body>
 </html>
-
