@@ -22,32 +22,39 @@
   <div class="footer">Bureau de Sauvegarde Temporelle – 2050</div>
 
   <script>
-// === CONFIG ===
-// 📌 Ton numéro WhatsApp
-const PHONE = "+33668666240";
-// 📌 Ta clé CallMeBot
-const APIKEY = "8941906";
 
-// === Description lisible du fragment ===
-// ⚠️ A personnaliser pour chaque fichier
-const fragment = "Fragment 4 (anniv cécile)";
+<script>
+// === Configuration ===
+const PHONE = "+33668666240"; // ⚠️ TON VRAI NUMÉRO ICI
+const APIKEY = "8941906"; // ⚠️ TON VRAI API KEY CALLMEBOT ICI
+const WORKER_URL = "https://a303.stephane-btn.workers.dev";
 
-// === Détection de l’équipe via l'URL ===
-// (ex : .../fragment.html?team=A)
+// === Description du fragment ===
+// ⚠️ A CHANGER pour chaque page différente
+const fragmentId = "fragment_1"; // Unique: fragment_1, fragment_2, fragment_3...
+const fragmentName = "Fragment 1 (salle principale)"; // Nom lisible pour WhatsApp
+
+// === Détection de l'équipe ===
 const params = new URLSearchParams(window.location.search);
 const team = params.get("team") || "UNKNOWN";
 
-// === Envoi WhatsApp via ton Worker ===
+// === Envoi WhatsApp avec cache ===
 if (team !== "UNKNOWN") {
-
-    const msg = encodeURIComponent(
-        `TEAM ${team} a trouvé ${fragment}`
-    );
-
-    // ⚠️ Attention : PHONE / APIKEY = majuscules, comme définis plus haut
-    fetch(`https://damp-meadow-3b23.stephane-btn.workers.dev?phone=${PHONE}&apikey=${APIKEY}&text=${msg}`)
-        .catch(()=>{ /* on ignore les erreurs CORS, normal */ });
+    const msg = encodeURIComponent(`TEAM ${team} a trouvé ${fragmentName}`);
+    
+    const url = `${WORKER_URL}?phone=${PHONE}&apikey=${APIKEY}&text=${msg}&team=${team}&fragment=${fragmentId}`;
+    
+    fetch(url)
+        .then(response => {
+            if (response.ok) {
+                console.log("✅ Notification envoyée");
+            }
+        })
+        .catch(() => {
+            // Ignore les erreurs CORS (normal)
+        });
 }
+
 
 
     const intro = document.getElementById('intro');
