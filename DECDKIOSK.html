@@ -206,9 +206,8 @@ button:hover{
 
       <div class="screen" id="screen" aria-live="polite">
         <div class="console" id="console">
-[BOOT] Initialisation du sous-système BST-404...
+[BOOT] Initialisation BST-404...
 [BOOT] Chargement du dictionnaire lexical...
-[BOOT] Chargement de l'interpréteur sémantique...
 [BOOT] Synchronisation temporelle : stable
 [ÉTAT] Scanner prêt.
         </div>
@@ -247,7 +246,8 @@ let qrTimeout = null;
   // ====== ROUTES (mot -> page) ======
 // Pour QRCODE → mettre URL ABSOLUE
 const ROUTES = {
-  "CECILE":"https://stephanebtn.github.io/savingatlas303/anniv0845.html",
+  "CECILE":"https://stephanebtn.github.io/savingatlas303/anniv0845.html?team=Cecile",
+	"MELANIE":"https://stephanebtn.github.io/savingatlas303/anniv0845.html?team=Melanie",
   "ANNIVERSAIRE":"https://stephanebtn.github.io/savingatlas303/anniv0956.html"
 };
 
@@ -436,3 +436,4 @@ window.addEventListener('load', ()=>{
 
 </body>
 </html>
+
