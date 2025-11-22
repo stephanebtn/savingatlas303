@@ -240,7 +240,7 @@ button:hover{
 
       <div class="footer">
         <div> Sous-système BST-404 </div>
-        <div> Firmware v1.5-cmd </div>
+        <div> Firmware v2.0-cf </div>
       </div>
     </div>
   </div>
@@ -255,6 +255,9 @@ button:hover{
 // ====== CONFIGURATION ======
 const urlParams = new URLSearchParams(location.search);
 const TEAM = urlParams.get("team") || "NONE";
+
+// 🔧 CONFIGUREZ VOTRE URL WORKER ICI
+const WORKER_URL = "https://a303.stephane-btn.workers.dev";
 
 // Affichage de l'équipe
 document.getElementById("teamIndicator").textContent = `TEAM: ${TEAM}`;
@@ -296,42 +299,80 @@ function play(audio) {
   } catch (e) {}
 }
 
-// ====== SYSTÈME DE COMMANDES À DISTANCE ======
+// ====== SYSTÈME DE COMMANDES À DISTANCE VIA CLOUDFLARE ======
 let lastCommandId = null;
+let checkCount = 0;
 
 async function checkCommands() {
+  if (TEAM === "NONE") return;
+  
+  checkCount++;
+  const url = `${WORKER_URL}/audio/get?team=${TEAM}`;
+  
   try {
-    // Vérifier s'il y a une commande pour cette équipe
-    const result = await window.storage.get(`cmd:${TEAM}`, true);
+    console.log(`[${checkCount}] 🔍 Vérification commandes... ${url}`);
     
-    if (result && result.value) {
-      const cmdData = JSON.parse(result.value);
-      
-      // Si c'est une nouvelle commande (ID différent)
-      if (cmdData.id !== lastCommandId) {
-        lastCommandId = cmdData.id;
+    const response = await fetch(url);
+    
+    console.log(`[${checkCount}] 📡 Réponse HTTP:`, response.status);
+    
+    if (!response.ok) {
+      console.error(`[${checkCount}] ❌ Erreur HTTP ${response.status}`);
+      return;
+    }
+    
+    const data = await response.json();
+    console.log(`[${checkCount}] 📦 Données:`, data);
+    
+    if (data.command) {
+      if (data.id !== lastCommandId) {
+        lastCommandId = data.id;
         
-        console.log(`[CMD] Commande reçue: ${cmdData.command}`);
+        console.log(`[${checkCount}] 🎵 NOUVELLE COMMANDE: ${data.command} (ID: ${data.id})`);
         
         // Exécuter la commande
-        if (cmdData.command.startsWith("amb")) {
-          playAmbience(cmdData.command.replace("amb", ""));
-        } else if (cmdData.command.startsWith("fx")) {
-          playFx(cmdData.command.replace("fx", ""));
-        } else if (cmdData.command.startsWith("voice")) {
-          playVoice(cmdData.command.replace("voice", ""));
+        if (data.command.startsWith("amb")) {
+          const num = data.command.replace("amb", "");
+          console.log(`[${checkCount}] 🎵 Lecture ambiance ${num}`);
+          playAmbience(num);
+        } else if (data.command.startsWith("fx")) {
+          const num = data.command.replace("fx", "");
+          console.log(`[${checkCount}] 🔊 Lecture FX ${num}`);
+          playFx(num);
+        } else if (data.command.startsWith("voice")) {
+          const num = data.command.replace("voice", "");
+          console.log(`[${checkCount}] 🎙️ Lecture voice ${num}`);
+          playVoice(num);
         }
+        
+        // Efface la commande après lecture
+        const clearUrl = `${WORKER_URL}/audio/clear?team=${TEAM}&id=${data.id}`;
+        console.log(`[${checkCount}] 🗑️ Effacement commande: ${clearUrl}`);
+        
+        const clearResponse = await fetch(clearUrl, { method: 'DELETE' });
+        console.log(`[${checkCount}] ✅ Commande effacée:`, clearResponse.status);
+      } else {
+        console.log(`[${checkCount}] ⏭️ Commande déjà traitée (ID: ${data.id})`);
       }
+    } else {
+      console.log(`[${checkCount}] 💤 Aucune commande en attente`);
     }
   } catch (error) {
-    // Pas de commande disponible ou erreur
+    console.error(`[${checkCount}] ⚠️ Erreur:`, error);
   }
 }
 
 // Vérifier les commandes toutes les 2 secondes
-if (TEAM !== "NONE") {
+if (TEAM !== "NONE" && WORKER_URL !== "https://votre-worker.workers.dev") {
   setInterval(checkCommands, 2000);
-  console.log(`[SYSTÈME] Écoute des commandes pour TEAM ${TEAM}`);
+  console.log(`[SYSTÈME] 🎧 Écoute des commandes pour TEAM ${TEAM}`);
+  console.log(`[SYSTÈME] 🌐 Worker URL: ${WORKER_URL}`);
+  console.log(`[SYSTÈME] ✅ Polling démarré (intervalle: 2s)`);
+  
+  // Premier check immédiat
+  setTimeout(checkCommands, 500);
+} else if (WORKER_URL === "https://votre-worker.workers.dev") {
+  console.warn('⚠️ WORKER_URL non configuré !');
 }
 
 // ====== UI ======
@@ -496,6 +537,7 @@ window.addEventListener('load', () => {
     "[BOOT] Interpréteur sémantique opérationnel...\n" +
     "[BOOT] Synchronisation temporelle : OK\n" +
     `[SYSTÈME] Équipe détectée: ${TEAM}\n` +
+    `[RÉSEAU] Worker: ${WORKER_URL !== "https://votre-worker.workers.dev" ? "✓ " + WORKER_URL : "⚠ Non configuré"}\n` +
     "[ÉTAT] Scanner prêt.\n";
   writeConsole(bootText, true);
 });
