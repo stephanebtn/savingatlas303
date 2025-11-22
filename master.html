@@ -3,7 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Panneau de Contrôle - BST-404</title>
+  <title>Panneau de Contrôle Audio - Escape Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #000;
@@ -288,11 +291,11 @@
   <div class="container">
     <div class="header">
       <div class="title">🎛️ Panneau de Contrôle Audio</div>
-      <div class="subtitle">Système de commande à distance - BST-404</div>
+      <div class="subtitle">Système de commande à distance - BST-404 Escape Game</div>
     </div>
 
     <div class="config-section">
-      <div style="font-size: 1.1rem; color: #ff0; margin-bottom: 10px;">⚙️ Configuration Worker</div>
+      <div style="font-size: 1.1rem; color: #ff0; margin-bottom: 10px;">⚙️ Configuration Worker Cloudflare</div>
       <input type="text" id="workerUrl" placeholder="https://votre-worker.workers.dev" />
       <button onclick="saveWorkerUrl()">💾 Sauvegarder l'URL</button>
       <div id="workerStatus" style="margin-top: 10px; font-size: 13px;"></div>
@@ -473,8 +476,7 @@
   <script>
     const logContainer = document.getElementById('logContainer');
     const logs = [];
-const WORKER_URL="a303.stephane-btn.workers.dev"
-    //let WORKER_URL = localStorage.getItem('workerUrl') || '';
+    let WORKER_URL = localStorage.getItem('workerUrl') || '';
 
     // Initialisation
     document.getElementById('workerUrl').value = WORKER_URL;
@@ -532,6 +534,9 @@ const WORKER_URL="a303.stephane-btn.workers.dev"
         statusEl.textContent = '⚡ Envoi en cours...';
         statusEl.classList.add('sending');
 
+        console.log('📤 Envoi vers:', `${WORKER_URL}/audio/send`);
+        console.log('📦 Données:', { team, command });
+
         const response = await fetch(`${WORKER_URL}/audio/send`, {
           method: 'POST',
           headers: {
@@ -540,17 +545,22 @@ const WORKER_URL="a303.stephane-btn.workers.dev"
           body: JSON.stringify({ team, command })
         });
 
+        console.log('📡 Réponse HTTP:', response.status, response.statusText);
+
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+          const errorText = await response.text();
+          console.error('❌ Erreur réponse:', errorText);
+          throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 100)}`);
         }
 
         const data = await response.json();
+        console.log('✅ Données reçues:', data);
 
         if (data.success) {
           statusEl.textContent = `✅ ${command.toUpperCase()} envoyé !`;
           addLog(`Team ${team}: ${command.toUpperCase()}`, 'success');
         } else {
-          throw new Error('Échec envoi');
+          throw new Error('Échec envoi - ' + JSON.stringify(data));
         }
 
         setTimeout(() => {
@@ -560,8 +570,9 @@ const WORKER_URL="a303.stephane-btn.workers.dev"
 
       } catch (error) {
         statusEl.textContent = '❌ Erreur d\'envoi';
-        addLog(`Team ${team}: ERREUR - ${error.message}`, 'error');
-        console.error('Erreur:', error);
+        const errorMsg = error.message || error.toString();
+        addLog(`Team ${team}: ERREUR - ${errorMsg}`, 'error');
+        console.error('❌ Erreur complète:', error);
         
         setTimeout(() => {
           statusEl.textContent = 'En attente...';
