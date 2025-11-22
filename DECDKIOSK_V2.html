@@ -4,7 +4,7 @@
 <link rel="manifest" href="manifest.json">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Machine d'Interprétation Lexicale — BST-404</title>
+  <title>Machine d'Interprétation Lexicale – BST-404</title>
 
   <style>
   :root{
@@ -24,7 +24,6 @@
   justify-content:center;
 }
 
-    /* wrapper & device centered */
     .wrapper{ width:100%; height:100vh; display:flex; align-items:center; justify-content:center; }
     .device {
   width:92vw;
@@ -75,7 +74,6 @@
   box-shadow:0 0 18px rgba(0,255,255,0.25);
 }
 
-    /* scanlines overlay */
     .screen::after{
   content:"";
   position:absolute; inset:0;
@@ -179,14 +177,18 @@ button:hover{
   text-shadow:0 0 4px var(--cyan-dim);
 }
 
-    .ornament {
-      width:76px; height:56px; border-radius:8px; overflow:hidden;
-      display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.06);
-      border:1px solid rgba(255,255,255,0.02);
+    .team-indicator {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0,255,255,0.2);
+      border: 1px solid var(--cyan);
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
     }
-    .ornament img{ max-width:72px; max-height:48px; opacity:0.95; }
 
-    /* small shake */
     @keyframes shake { 0%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(2px)}100%{transform:translateX(0)} }
 
     @media (min-width:680px){
@@ -195,13 +197,15 @@ button:hover{
   </style>
 </head>
 
-<audio id="ambience" preload="auto" loop></audio>
-<audio id="fx" preload="auto"></audio>
-<audio id="voice" preload="auto"></audio>
-
 <body>
+  <audio id="ambience" preload="auto" loop></audio>
+  <audio id="fx" preload="auto"></audio>
+  <audio id="voice" preload="auto"></audio>
+
   <div class="wrapper">
     <div class="device" role="application" aria-label="Machine d'Interprétation Lexicale BST-404">
+      <div class="team-indicator" id="teamIndicator">TEAM: --</div>
+      
       <div class="header">
         <div class="title">
           Machine d'Interprétation Lexicale
@@ -236,156 +240,176 @@ button:hover{
 
       <div class="footer">
         <div> Sous-système BST-404 </div>
-        <div> Firmware v1.4-ht </div>
+        <div> Firmware v1.5-cmd </div>
       </div>
     </div>
   </div>
 
-  <!-- sons : place tes fichiers dans assets/ok.mp3, assets/error.mp3, assets/scan.mp3 -->
   <audio id="soundOk" src="assets/ok.mp3" preload="auto"></audio>
   <audio id="soundError" src="assets/error.mp3" preload="auto"></audio>
   <audio id="soundScan" src="assets/scan.mp3" preload="auto"></audio>
-	<script src="qrcode.min.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script>
 
+// ====== CONFIGURATION ======
+const urlParams = new URLSearchParams(location.search);
+const TEAM = urlParams.get("team") || "NONE";
 
-let qrTimeout = null;
-const team   = new URLSearchParams(location.search).get("team");
-const cmd    = new URLSearchParams(location.search).get("cmd");
+// Affichage de l'équipe
+document.getElementById("teamIndicator").textContent = `TEAM: ${TEAM}`;
 
-const ambience = document.getElementById("ambience");
-const fx       = document.getElementById("fx");
-const voice    = document.getElementById("voice");
-
-
-  // ====== ROUTES (mot -> page) ======
-
+// ====== ROUTES (mot -> page) ======
 const ROUTES = {
-  "CECILE":"https://stephanebtn.github.io/savingatlas303/anniv0845.html",
-  "ANNIVERSAIRE":"https://stephanebtn.github.io/savingatlas303/anniv0956.html"
+  "CECILE": "https://stephanebtn.github.io/savingatlas303/anniv0845.html",
+  "ANNIVERSAIRE": "https://stephanebtn.github.io/savingatlas303/anniv0956.html"
 };
 
+// ====== AUDIO ======
+const ambience = document.getElementById("ambience");
+const fx = document.getElementById("fx");
+const voice = document.getElementById("voice");
+const sOk = document.getElementById('soundOk');
+const sErr = document.getElementById('soundError');
+const sScan = document.getElementById('soundScan');
 
-// Lecteur audio
-
-function playAmbience(n){
-   ambience.src = `audio/ambience${n}.mp3`;
-   ambience.play();
+function playAmbience(n) {
+  ambience.src = `audio/ambience${n}.mp3`;
+  ambience.play().catch(e => console.log("Audio play error:", e));
 }
 
-function playFx(n){
-   fx.src = `audio/fx${n}.mp3`;
-   fx.play();
+function playFx(n) {
+  fx.src = `audio/fx${n}.mp3`;
+  fx.play().catch(e => console.log("Audio play error:", e));
 }
 
-function playVoice(n){
-   voice.src = `audio/agent${n}.mp3`;
-   voice.play();
+function playVoice(n) {
+  voice.src = `audio/agent${n}.mp3`;
+  voice.play().catch(e => console.log("Audio play error:", e));
 }
 
-// moteur de commande
-
-if (cmd){
-   if (cmd.startsWith("amb")){
-      playAmbience(cmd.replace("amb",""));
-   }
-   if (cmd.startsWith("fx")){
-      playFx(cmd.replace("fx",""));
-   }
-   if (cmd.startsWith("voice")){
-      playVoice(cmd.replace("voice",""));
-   }
+function play(audio) {
+  if (!audio) return;
+  try {
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+  } catch (e) {}
 }
 
-// UI
+// ====== SYSTÈME DE COMMANDES À DISTANCE ======
+let lastCommandId = null;
+
+async function checkCommands() {
+  try {
+    // Vérifier s'il y a une commande pour cette équipe
+    const result = await window.storage.get(`cmd:${TEAM}`, true);
+    
+    if (result && result.value) {
+      const cmdData = JSON.parse(result.value);
+      
+      // Si c'est une nouvelle commande (ID différent)
+      if (cmdData.id !== lastCommandId) {
+        lastCommandId = cmdData.id;
+        
+        console.log(`[CMD] Commande reçue: ${cmdData.command}`);
+        
+        // Exécuter la commande
+        if (cmdData.command.startsWith("amb")) {
+          playAmbience(cmdData.command.replace("amb", ""));
+        } else if (cmdData.command.startsWith("fx")) {
+          playFx(cmdData.command.replace("fx", ""));
+        } else if (cmdData.command.startsWith("voice")) {
+          playVoice(cmdData.command.replace("voice", ""));
+        }
+      }
+    }
+  } catch (error) {
+    // Pas de commande disponible ou erreur
+  }
+}
+
+// Vérifier les commandes toutes les 2 secondes
+if (TEAM !== "NONE") {
+  setInterval(checkCommands, 2000);
+  console.log(`[SYSTÈME] Écoute des commandes pour TEAM ${TEAM}`);
+}
+
+// ====== UI ======
 const input = document.getElementById('decodeInput');
 const btn = document.getElementById('decodeBtn');
 const consoleEl = document.getElementById('console');
 const statusEl = document.getElementById('status');
 
-// audio
-const sOk = document.getElementById('soundOk');
-const sErr = document.getElementById('soundError');
-const sScan = document.getElementById('soundScan');
-
 let currentInterval = null;
+let qrTimeout = null;
 
-// write effect
-function writeConsole(text, fast = false, onFinish = null){
+function writeConsole(text, fast = false, onFinish = null) {
   const base = fast ? 10 : 30;
-  if(currentInterval){ clearInterval(currentInterval); }
+  if (currentInterval) {
+    clearInterval(currentInterval);
+  }
   consoleEl.textContent = '';
   let i = 0;
-  currentInterval = setInterval(()=>{
+  currentInterval = setInterval(() => {
     consoleEl.textContent += text[i] || "";
     i++;
-    if(i>text.length){
+    if (i > text.length) {
       clearInterval(currentInterval);
       currentInterval = null;
-      if(onFinish) onFinish();
+      if (onFinish) onFinish();
     }
   }, base);
 }
 
-// random garbage
-function randomGarbage(len = 80){
+function randomGarbage(len = 80) {
   const chars = "!@#$%^&*()_+{}[]<>?/|~-=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   let s = "";
-  for(let i=0;i<len;i++) s += chars[Math.floor(Math.random()*chars.length)];
+  for (let i = 0; i < len; i++) s += chars[Math.floor(Math.random() * chars.length)];
   return s;
 }
 
-function play(audio){
-  if(!audio) return;
-  try{
-    audio.currentTime = 0;
-    audio.play().catch(()=>{});
-  }catch(e){}
-}
-
-// === Scan + Analyse ===
-function analyseWord(word){
+function analyseWord(word) {
   writeConsole("[ANALYSE] Interprétation lexicale en cours...\n[CORR] " + randomGarbage(64));
   play(sScan);
 
   let pct = 4;
-  const tick = setInterval(()=>{
-    pct += Math.floor(Math.random()*10)+4;
-    if(pct>98) pct = 99;
+  const tick = setInterval(() => {
+    pct += Math.floor(Math.random() * 10) + 4;
+    if (pct > 98) pct = 99;
     consoleEl.textContent = "[ANALYSE] Interprétation lexicale en cours...\n[CORR] " + pct + "%";
   }, 260);
 
-  setTimeout(()=>{
+  setTimeout(() => {
     clearInterval(tick);
     const key = word.trim().toUpperCase();
-    if(ROUTES[key]) success(key);
+    if (ROUTES[key]) success(key);
     else fail(key);
   }, 1600);
 }
 
-// ===== SUCCESS with QR =====
-function success(key){
+function success(key) {
   statusEl.className = "status ok";
   statusEl.style.display = "flex";
-  statusEl.textContent = "TERME AUTHENTIFIÉ — GÉNÉRATION DU QRCODE";
+  statusEl.textContent = "TERME AUTHENTIFIÉ – GÉNÉRATION DU QRCODE";
   play(sOk);
 
-  // Stoppe tout intervalle d’écriture
-  if(currentInterval){
-     clearInterval(currentInterval);
-     currentInterval = null;
+  if (currentInterval) {
+    clearInterval(currentInterval);
+    currentInterval = null;
   }
 
-  // Écrit le message de pre-QRCODE
   writeConsole(
-    "[TERME] " + key + " — AUTHENTIFICATION VALIDÉE\n" +
+    "[TERME] " + key + " – AUTHENTIFICATION VALIDÉE\n" +
     "[QRCODE] Fragment encodé…",
     false,
     () => {
-      // Une fois l’écriture finie, on affiche le QR
       setTimeout(() => {
+        // Construction de l'URL avec le paramètre team
+        let targetUrl = ROUTES[key];
+        if (TEAM !== "NONE") {
+          targetUrl += (targetUrl.includes('?') ? '&' : '?') + `team=${TEAM}`;
+        }
 
-        // IMPORTANT : QRCODE dans un conteneur séparé
         consoleEl.innerHTML =
           "<div id='qrWrap' style='display:flex;justify-content:center;margin:10px 0;'></div>" +
           "\n[SCANNER] Présentez un appareil compatible.\n" +
@@ -394,7 +418,7 @@ function success(key){
         let qrDiv = document.getElementById('qrWrap');
 
         new QRCode(qrDiv, {
-          text: ROUTES[key],
+          text: targetUrl,
           width: 190,
           height: 190,
           colorDark: "#0ff",
@@ -402,83 +426,80 @@ function success(key){
           correctLevel: QRCode.CorrectLevel.H
         });
 
-        // 🔥 On empêche writeConsole de toucher au QR code
         currentInterval = null;
 
-       // ----- retour automatique avec annulation de l'ancien timer -----
-if (qrTimeout) {
-    clearTimeout(qrTimeout);
-    qrTimeout = null;
-}
+        if (qrTimeout) {
+          clearTimeout(qrTimeout);
+          qrTimeout = null;
+        }
 
-qrTimeout = setTimeout(() => {
-    statusEl.style.display = "none";
-    writeConsole("[ÉTAT] Scanner prêt.\n");
-    qrTimeout = null;
-}, 30000);
+        qrTimeout = setTimeout(() => {
+          statusEl.style.display = "none";
+          writeConsole("[ÉTAT] Scanner prêt.\n");
+          qrTimeout = null;
+        }, 30000);
 
-      }, 250); 
+      }, 250);
     }
   );
 }
-// ===== FAIL =====
-function fail(key){
+
+function fail(key) {
   statusEl.className = "status err";
   statusEl.style.display = "flex";
-  statusEl.textContent = "ERREUR LEXICALE — AUCUNE CORRESPONDANCE";
+  statusEl.textContent = "ERREUR LEXICALE – AUCUNE CORRESPONDANCE";
   play(sErr);
 
   const dev = document.querySelector('.device');
   dev.style.animation = "shake 0.28s";
-  setTimeout(()=> dev.style.animation="", 300);
+  setTimeout(() => dev.style.animation = "", 300);
 
-  writeConsole("[ERREUR] " + key + " — TERMINE INCONNU\n[RESET] Remise à zéro…");
+  writeConsole("[ERREUR] " + key + " – TERMINE INCONNU\n[RESET] Remise à zéro…");
 
-  setTimeout(()=>{
+  setTimeout(() => {
     statusEl.style.display = "none";
     writeConsole("[ÉTAT] Scanner prêt.\n");
   }, 2500);
 }
 
-// ===== EVENTS =====
-btn.addEventListener('click', ()=>{
+btn.addEventListener('click', () => {
   const v = input.value || "";
-  if(!v.trim()){
+  if (!v.trim()) {
     statusEl.className = "status err";
     statusEl.style.display = "flex";
-    statusEl.textContent = "ERREUR — AUCUN TERME FOURNI";
+    statusEl.textContent = "ERREUR – AUCUN TERME FOURNI";
     play(sErr);
 
     const dev = document.querySelector('.device');
     dev.style.animation = "shake 0.28s";
-    setTimeout(()=> dev.style.animation="", 300);
+    setTimeout(() => dev.style.animation = "", 300);
 
     writeConsole("[ERREUR] Remise à zéro…");
-    setTimeout(()=>{
-      statusEl.style.display="none";
+    setTimeout(() => {
+      statusEl.style.display = "none";
       writeConsole("[ÉTAT] Scanner prêt.\n");
-    },1800);
+    }, 1800);
     return;
   }
   analyseWord(v);
 });
 
-input.addEventListener('keypress',(e)=>{
-  if(e.key === "Enter") btn.click();
+input.addEventListener('keypress', (e) => {
+  if (e.key === "Enter") btn.click();
 });
 
-// Boot
-window.addEventListener('load', ()=>{
+window.addEventListener('load', () => {
   input.focus();
   const bootText =
     "[BOOT] Initialisation du sous-système BST-404...\n" +
     "[BOOT] Chargement du dictionnaire lexical...\n" +
     "[BOOT] Interpréteur sémantique opérationnel...\n" +
     "[BOOT] Synchronisation temporelle : OK\n" +
+    `[SYSTÈME] Équipe détectée: ${TEAM}\n` +
     "[ÉTAT] Scanner prêt.\n";
   writeConsole(bootText, true);
 });
-  </script>
 
+  </script>
 </body>
 </html>
