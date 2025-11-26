@@ -430,6 +430,9 @@ function attemptUnlock() {
           "[ÉTAT] Scanner prêt.\n";
         writeConsole(bootText, true);
         input.focus();
+        
+        // 🔥 DÉMARRE LE POLLING MAINTENANT
+        startPolling();
       }, 500);
     }, 1000);
     
@@ -659,17 +662,24 @@ async function checkCommands() {
   }
 }
 
-// Vérifier les commandes toutes les 2 secondes
-if (TEAM !== "NONE" && WORKER_URL !== "https://votre-worker.workers.dev") {
-  setInterval(checkCommands, 2000);
-  console.log(`[SYSTÈME] 🎧 Écoute des commandes pour TEAM ${TEAM}`);
-  console.log(`[SYSTÈME] 🌐 Worker URL: ${WORKER_URL}`);
-  console.log(`[SYSTÈME] ✅ Polling démarré (intervalle: 2s)`);
-  
-  // Premier check immédiat
-  setTimeout(checkCommands, 500);
-} else if (WORKER_URL === "https://votre-worker.workers.dev") {
-  console.warn('⚠️ WORKER_URL non configuré !');
+// ====== DÉMARRAGE DU SYSTÈME DE POLLING ======
+function startPolling() {
+  if (TEAM !== "NONE" && WORKER_URL !== "https://votre-worker.workers.dev") {
+    setInterval(checkCommands, 2000);
+    console.log(`[SYSTÈME] 🎧 Écoute des commandes pour TEAM ${TEAM}`);
+    console.log(`[SYSTÈME] 🌐 Worker URL: ${WORKER_URL}`);
+    console.log(`[SYSTÈME] ✅ Polling démarré (intervalle: 2s)`);
+    
+    // Premier check immédiat
+    setTimeout(checkCommands, 500);
+  } else if (WORKER_URL === "https://votre-worker.workers.dev") {
+    console.warn('⚠️ WORKER_URL non configuré !');
+  }
+}
+
+// Démarre le polling si déjà déverrouillé
+if (isUnlocked) {
+  startPolling();
 }
 
 // ====== UI ======
@@ -827,7 +837,7 @@ input.addEventListener('keypress', (e) => {
 });
 
 window.addEventListener('load', () => {
-  // Ne démarre le boot que si déjà déverrouillé
+  // Ne démarre le boot QUE si déjà déverrouillé
   if (isUnlocked) {
     input.focus();
     const bootText =
@@ -839,6 +849,9 @@ window.addEventListener('load', () => {
       `[RÉSEAU] Worker: ${WORKER_URL !== "https://votre-worker.workers.dev" ? "✓ " + WORKER_URL : "⚠ Non configuré"}\n` +
       "[ÉTAT] Scanner prêt.\n";
     writeConsole(bootText, true);
+    
+    // Démarre aussi le polling
+    startPolling();
   }
 });
 
