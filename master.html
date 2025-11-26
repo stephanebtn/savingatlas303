@@ -329,6 +329,14 @@
             <button class="cmd-btn" onclick="broadcastCommand('voice3')">VOICE 3</button>
           </div>
         </div>
+        <div class="section" style="margin-top: 20px; border-top: 2px solid var(--red); padding-top: 15px;">
+          <div style="font-size: 0.9rem; color: var(--red); margin-bottom: 10px; text-align: center;">
+            ⚠️ SÉQUENCE FINALE
+          </div>
+          <button class="cmd-btn" onclick="if(confirm('Déclencher la séquence de REBOOT finale pour TOUTES les équipes ?')) broadcastCommand('reboot')" style="width: 100%; font-size: 1.1rem; padding: 15px;">
+            🔄 REBOOT GÉNÉRAL
+          </button>
+        </div>
       </div>
 
       <div class="teams-grid">
@@ -360,6 +368,12 @@
               <button class="cmd-btn" onclick="sendCommand('A', 'voice2')">VOICE 2</button>
               <button class="cmd-btn" onclick="sendCommand('A', 'voice3')">VOICE 3</button>
             </div>
+          </div>
+
+          <div class="section" style="margin-top: 15px; border-top: 1px solid var(--green); padding-top: 10px;">
+            <button class="cmd-btn" onclick="if(confirm('Déclencher REBOOT pour Team A ?')) sendCommand('A', 'reboot')" style="width: 100%; background: rgba(0,255,0,0.15);">
+              🔄 REBOOT
+            </button>
           </div>
 
           <div class="status-indicator" id="status-A">En attente...</div>
@@ -395,6 +409,12 @@
             </div>
           </div>
 
+          <div class="section" style="margin-top: 15px; border-top: 1px solid var(--cyan); padding-top: 10px;">
+            <button class="cmd-btn" onclick="if(confirm('Déclencher REBOOT pour Team B ?')) sendCommand('B', 'reboot')" style="width: 100%; background: rgba(0,255,255,0.15);">
+              🔄 REBOOT
+            </button>
+          </div>
+
           <div class="status-indicator" id="status-B">En attente...</div>
         </div>
 
@@ -428,6 +448,12 @@
             </div>
           </div>
 
+          <div class="section" style="margin-top: 15px; border-top: 1px solid var(--orange); padding-top: 10px;">
+            <button class="cmd-btn" onclick="if(confirm('Déclencher REBOOT pour Team C ?')) sendCommand('C', 'reboot')" style="width: 100%; background: rgba(255,170,0,0.15);">
+              🔄 REBOOT
+            </button>
+          </div>
+
           <div class="status-indicator" id="status-C">En attente...</div>
         </div>
 
@@ -459,6 +485,12 @@
               <button class="cmd-btn" onclick="sendCommand('D', 'voice2')">VOICE 2</button>
               <button class="cmd-btn" onclick="sendCommand('D', 'voice3')">VOICE 3</button>
             </div>
+          </div>
+
+          <div class="section" style="margin-top: 15px; border-top: 1px solid var(--purple); padding-top: 10px;">
+            <button class="cmd-btn" onclick="if(confirm('Déclencher REBOOT pour Team D ?')) sendCommand('D', 'reboot')" style="width: 100%; background: rgba(160,0,255,0.15);">
+              🔄 REBOOT
+            </button>
           </div>
 
           <div class="status-indicator" id="status-D">En attente...</div>
