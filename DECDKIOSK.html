@@ -498,6 +498,7 @@ function play(audio) {
 async function executeReboot() {
   console.log('🔄 DÉBUT SÉQUENCE REBOOT');
   
+  const wrapper = document.querySelector('.wrapper');
   const device = document.querySelector('.device');
   const screen = document.getElementById('screen');
   const consoleEl = document.getElementById('console');
@@ -506,84 +507,158 @@ async function executeReboot() {
   input.disabled = true;
   btn.disabled = true;
   
-  // ÉTAPE 1: Bruit TV (5 secondes)
+  // ========================================
+  // PHASE 1: BRUIT STATIQUE (5 secondes)
+  // ========================================
   console.log('📺 Phase 1: Bruit statique');
   
-  // Crée l'effet de bruit visuel
+  // Cache tout sauf l'écran
+  document.querySelector('.header').style.display = 'none';
+  document.querySelector('.controls').style.display = 'none';
+  document.querySelector('.footer').style.display = 'none';
+  document.querySelector('.team-indicator').style.display = 'none';
+  document.querySelector('.lock-icon').style.display = 'none';
+  
+  // Agrandit l'écran pour prendre tout l'espace
+  device.style.width = '100vw';
+  device.style.maxWidth = '100vw';
+  device.style.height = '100vh';
+  device.style.padding = '0';
+  device.style.border = 'none';
+  screen.style.width = '100%';
+  screen.style.height = '100%';
+  screen.style.border = 'none';
+  screen.style.borderRadius = '0';
+  
+  // Génère le bruit visuel
   consoleEl.innerHTML = '';
   screen.style.background = 'rgba(255,255,255,0.1)';
   
   let noiseInterval = setInterval(() => {
     let noise = '';
-    for (let i = 0; i < 800; i++) {
+    for (let i = 0; i < 1200; i++) {
       noise += String.fromCharCode(Math.random() > 0.5 ? 9608 : 9617);
     }
     consoleEl.textContent = noise;
   }, 50);
   
   // Son de bruit statique
-  fx.src = 'audio/static.mp3'; // Assurez-vous d'avoir ce fichier
+  fx.src = 'audio/static.mp3';
   fx.loop = true;
   fx.play().catch(() => {});
   
   await new Promise(resolve => setTimeout(resolve, 5000));
   
-  // ÉTAPE 2: BIP + Écran noir (3 secondes)
-  console.log('⚫ Phase 2: Écran noir');
+  // ========================================
+  // PHASE 2: ÉCRAN NOIR + CURSEUR (5 secondes)
+  // ========================================
+  console.log('⚫ Phase 2: Écran noir + curseur');
   clearInterval(noiseInterval);
   fx.pause();
   fx.loop = false;
   
-  // Son de BIP
-  fx.src = 'audio/beep.mp3'; // Assurez-vous d'avoir ce fichier
-  fx.play().catch(() => {});
-  
+  // Écran totalement noir
   screen.style.background = '#000';
-  consoleEl.textContent = '';
-  device.style.animation = 'shake 0.3s';
+  consoleEl.innerHTML = '<span style="animation: blink 1s infinite;">█</span>';
   
+  // Ajoute l'animation de clignotement
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  await new Promise(resolve => setTimeout(resolve, 5000));
+  
+  // ========================================
+  // PHASE 3: MESSAGES CENTRÉS
+  // ========================================
+  console.log('💫 Phase 3: Messages système');
+  
+  consoleEl.style.display = 'flex';
+  consoleEl.style.alignItems = 'center';
+  consoleEl.style.justifyContent = 'center';
+  consoleEl.style.textAlign = 'center';
+  consoleEl.style.fontSize = '1.2rem';
+  consoleEl.style.height = '100%';
+  
+  // Message 1
+  consoleEl.innerHTML = 'Anomalie temporelle détectée . . .';
   await new Promise(resolve => setTimeout(resolve, 3000));
   
-  // ÉTAPE 3: Séquence de réinitialisation
-  console.log('💫 Phase 3: Réinitialisation');
-  device.style.animation = '';
-  screen.style.background = 'rgba(0,255,255,0.08)';
+  // Message 2
+  consoleEl.innerHTML = 'Séquence de réinitialisation enclenchée . . .';
+  await new Promise(resolve => setTimeout(resolve, 3000));
   
-  const rebootSequence = `[CRITIQUE] Anomalie temporelle détectée
-[SYSTÈME] Séquence de réinitialisation enclenchée...
-
->> Analyse de la trame temporelle
->> Nouvelle trame temporelle détectée : 2050-Ω
-
-[ERREUR] Agent 404 : STATUS INJOIGNABLE
-[ERREUR] Canal 404-Δ : HORS LIGNE
-
-[BOOT] Lancement du sous-système 304D00E...
-[BOOT] Protocole de sauvegarde activé...
-[BOOT] Chargement du message final...
-
-[AUDIO] Déclenchement transmission finale...`;
-
-  // Affichage progressif
-  consoleEl.textContent = '';
-  let i = 0;
-  const typeInterval = setInterval(() => {
-    consoleEl.textContent += rebootSequence[i] || '';
-    i++;
-    if (i >= rebootSequence.length) {
-      clearInterval(typeInterval);
-      
-      // ÉTAPE 4: Message audio final (après 2 secondes)
-      setTimeout(() => {
-        console.log('🎙️ Phase 4: Message final');
-        voice.src = 'audio/final_message.mp3'; // Votre message final
-        voice.play().catch(() => {});
-        
-        // Message visuel
-        consoleEl.textContent += '\n\n[TRANSMISSION] Message de l\'Agent 404 en cours...\n[●] Lecture audio activée';
-      }, 2000);
-    }
-  }, 30);
+  // Message 3: Écran noir + curseur
+  consoleEl.innerHTML = '<span style="animation: blink 1s infinite;">█</span>';
+  await new Promise(resolve => setTimeout(resolve, 3000));
+  
+  // ========================================
+  // PHASE 4: DIAGNOSTIC
+  // ========================================
+  console.log('🔍 Phase 4: Diagnostic');
+  
+  consoleEl.style.fontSize = '1rem';
+  consoleEl.style.textAlign = 'left';
+  consoleEl.style.padding = '40px';
+  
+  const diagnosticLines = [
+    'Séquence de diagnostic :',
+    '',
+    '> Sous-système 304D00E . . . . . . . . . . [ ACTIF ]',
+    '> Agent 404 . . . . . . . . . . . . . . . . [ INJOIGNABLE ]',
+    '> Nouvelle trame temporelle détectée . . . [ 2050-Ω ]',
+    '',
+    'Transmission du dernier message de l\'Agent 404',
+  ];
+  
+  consoleEl.innerHTML = '';
+  for (let i = 0; i < diagnosticLines.length; i++) {
+    consoleEl.innerHTML += diagnosticLines[i] + '\n';
+    await new Promise(resolve => setTimeout(resolve, 800));
+  }
+  
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  
+  // ========================================
+  // PHASE 5: ÉCRAN NOIR
+  // ========================================
+  console.log('⚫ Phase 5: Écran noir');
+  consoleEl.innerHTML = '';
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  
+  // ========================================
+  // PHASE 6: DÉCRYPTAGE
+  // ========================================
+  console.log('🔓 Phase 6: Décryptage');
+  
+  consoleEl.style.textAlign = 'center';
+  consoleEl.style.fontSize = '1.1rem';
+  consoleEl.style.display = 'flex';
+  consoleEl.style.alignItems = 'center';
+  consoleEl.style.justifyContent = 'center';
+  
+  consoleEl.innerHTML = 'Veuillez patienter . . .<br><br>Décryption en cours . . .';
+  await new Promise(resolve => setTimeout(resolve, 3000));
+  
+  // ========================================
+  // PHASE 7: MESSAGE AUDIO
+  // ========================================
+  console.log('🎙️ Phase 7: Message final');
+  
+  consoleEl.innerHTML = '[ TRANSMISSION EN COURS ]<br><br>●';
+  
+  voice.src = 'audio/final_message.mp3';
+  voice.play().catch(() => {});
+  
+  // Optionnel: Réinitialiser l'interface après le message
+  voice.addEventListener('ended', () => {
+    consoleEl.innerHTML = '[ FIN DE TRANSMISSION ]<br><br>— Agent 404 —';
+  }, { once: true });
 }
 
 // ====== SYSTÈME DE COMMANDES À DISTANCE VIA CLOUDFLARE ======
