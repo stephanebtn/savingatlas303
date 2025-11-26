@@ -375,7 +375,7 @@ const WORKER_URL = "https://a303.stephane-btn.workers.dev";
 // 🔒 CONFIGURATION DU MOT DE PASSE
 // Changez "locked=true" en "locked=false" pour désactiver le verrouillage
 const IS_LOCKED = urlParams.get("locked") !== "false"; // Par défaut: verrouillé
-const PASSWORD = "BST404"; // ⚠️ CHANGEZ LE MOT DE PASSE ICI
+const PASSWORD = "ATLASFUNKY303"; // ⚠️ CHANGEZ LE MOT DE PASSE ICI
 
 // Affichage de l'équipe
 document.getElementById("teamIndicator").textContent = `TEAM: ${TEAM}`;
@@ -400,9 +400,10 @@ if (!IS_LOCKED) {
 }
 
 function attemptUnlock() {
-  const enteredPassword = passwordInput.value.trim().toUpperCase();
+  const enteredPassword = passwordInput.value.trim().toUpperCase().replace(/\s+/g, ''); // Retire TOUS les espaces
+  const correctPassword = PASSWORD.toUpperCase().replace(/\s+/g, '');
   
-  if (enteredPassword === PASSWORD.toUpperCase()) {
+  if (enteredPassword === correctPassword) {
     // Mot de passe correct
     unlockError.style.color = 'var(--cyan)';
     unlockError.textContent = '✓ ACCÈS AUTORISÉ';
