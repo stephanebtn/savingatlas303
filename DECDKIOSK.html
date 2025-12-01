@@ -440,7 +440,7 @@ function attemptUnlock() {
   } else {
     // Mot de passe incorrect
     unlockError.style.color = '#f00';
-    unlockError.textContent = '✗ MOT DE PASSE INCORRECT - titre de votre prochain tube';
+    unlockError.textContent = '✗ MOT DE PASSE INCORRECT';
     
     play(sErr);
     
@@ -633,7 +633,7 @@ async function executeReboot() {
   await new Promise(resolve => setTimeout(resolve, 2000));
   
   // ========================================
-  // PHASE 6: DÉCRYPTAGE
+  // PHASE 6: DÉCRYPTAGE (3 sec avec curseur clignotant)
   // ========================================
   console.log('🔓 Phase 6: Décryptage');
   
@@ -643,15 +643,15 @@ async function executeReboot() {
   consoleEl.style.alignItems = 'center';
   consoleEl.style.justifyContent = 'center';
   
-  consoleEl.innerHTML = 'Veuillez patienter . . .<br><br>Décryption en cours . . .';
+  consoleEl.innerHTML = 'Veuillez patienter . . .<br><br>Décryptage en cours . . .<br><br><span style="animation: blink 1s infinite;">█</span>';
   await new Promise(resolve => setTimeout(resolve, 3000));
   
   // ========================================
-  // PHASE 7: MESSAGE AUDIO
+  // PHASE 7: MESSAGE AUDIO (avec curseur clignotant)
   // ========================================
   console.log('🎙️ Phase 7: Message final');
   
-  consoleEl.innerHTML = '[ TRANSMISSION EN COURS ]<br><br>●';
+  consoleEl.innerHTML = '[ TRANSMISSION EN COURS ]<br><br><span style="animation: blink 1s infinite;">█</span>';
   
   voice.src = 'audio/final_message.mp3';
   voice.play().catch(() => {});
