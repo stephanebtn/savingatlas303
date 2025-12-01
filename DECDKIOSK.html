@@ -643,7 +643,7 @@ async function executeReboot() {
   consoleEl.style.alignItems = 'center';
   consoleEl.style.justifyContent = 'center';
   
-  consoleEl.innerHTML = 'Veuillez patienter . . .<br><br>Décryptage en cours . . .<br><br><span style="animation: blink 1s infinite;">█</span>';
+  consoleEl.innerHTML = 'Veuillez patienter . . .<br><br>Décryption en cours . . .<br><br><span style="animation: blink 1s infinite;">█</span>';
   await new Promise(resolve => setTimeout(resolve, 3000));
   
   // ========================================
@@ -706,19 +706,31 @@ async function checkCommands() {
           return; // Sort de la fonction
         }
         
-        // Exécuter les commandes audio normales
-        if (data.command.startsWith("amb")) {
-          const num = data.command.replace("amb", "");
-          console.log(`[${checkCount}] 🎵 Lecture ambiance ${num}`);
-          playAmbience(num);
-        } else if (data.command.startsWith("fx")) {
-          const num = data.command.replace("fx", "");
-          console.log(`[${checkCount}] 🔊 Lecture FX ${num}`);
-          playFx(num);
-        } else if (data.command.startsWith("voice")) {
-          const num = data.command.replace("voice", "");
-          console.log(`[${checkCount}] 🎙️ Lecture voice ${num}`);
-          playVoice(num);
+        // 🎵 GESTION DES COMMANDES MULTIPLES (séparées par virgule)
+        const commands = data.command.split(',');
+        
+        for (const cmd of commands) {
+          const command = cmd.trim();
+          
+          // Exécuter les commandes audio
+          if (command.startsWith("amb")) {
+            const num = command.replace("amb", "");
+            console.log(`[${checkCount}] 🎵 Lecture ambiance ${num}`);
+            playAmbience(num);
+          } else if (command.startsWith("fx")) {
+            const num = command.replace("fx", "");
+            console.log(`[${checkCount}] 🔊 Lecture FX ${num}`);
+            playFx(num);
+          } else if (command.startsWith("voice")) {
+            const num = command.replace("voice", "");
+            console.log(`[${checkCount}] 🎙️ Lecture voice ${num}`);
+            playVoice(num);
+          }
+          
+          // Petit délai entre chaque commande (optionnel)
+          if (commands.length > 1) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+          }
         }
         
         // Efface la commande après lecture
