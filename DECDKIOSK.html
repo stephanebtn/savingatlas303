@@ -511,6 +511,10 @@ async function enterOfflineMode() {
   console.log('[DEBUG] isOfflineMode:', isOfflineMode);
   console.log('[DEBUG] horizonEnabled:', horizonEnabled);
   
+  // Change les textes de l'interface pour le mode hors-ligne
+  document.querySelector('.controls div[style*="font-size:13px"]').textContent = "Saisir la commande de validation";
+  input.placeholder = "COMMANDE DE VALIDATION";
+  
   // Affiche le message
   const offlineText = `[PROTOCOL 7X-B] Détection : Effondrement de Trame
 [ÉTAT] Procédure d'Urgence : ACTIVÉE
@@ -889,8 +893,16 @@ async function executeHorizonSequence() {
 function playFinalVideo() {
   console.log('🎬 LECTURE DU FRAGMENT FINAL');
   
+  // Cache complètement l'interface de saisie
+  document.querySelector('.controls').style.display = 'none';
+  
   const screen = document.getElementById('screen');
   screen.style.padding = '0';
+  screen.style.minHeight = '400px'; // Augmente la hauteur
+  screen.style.maxHeight = 'none';
+  
+  consoleEl.style.maxHeight = 'none';
+  consoleEl.style.height = '400px';
   
   consoleEl.innerHTML = `
     <video 
@@ -898,7 +910,8 @@ function playFinalVideo() {
       width="100%" 
       height="100%" 
       autoplay 
-      style="display:block; max-height:220px; object-fit:contain;"
+      controls
+      style="display:block; height:100%; width:100%; object-fit:contain; background:#000;"
     >
       <source src="audio/final_fragment.mp4" type="video/mp4" />
       Votre navigateur ne supporte pas la lecture vidéo.
@@ -917,6 +930,17 @@ function playFinalVideo() {
 // ====== DIRECTIVES FINALES ======
 async function finalDirectives() {
   console.log('📋 DIRECTIVES FINALES');
+  
+  // Garde l'interface de saisie cachée
+  document.querySelector('.controls').style.display = 'none';
+  
+  // Restaure la taille de l'écran
+  const screen = document.getElementById('screen');
+  screen.style.minHeight = '140px';
+  screen.style.padding = '12px';
+  
+  consoleEl.style.maxHeight = '220px';
+  consoleEl.style.height = 'auto';
   
   const directivesText = `[DIRECTIVE FINALE] Retirez les Modules CST un par un.
 [ORDRE] De droite vers la gauche.
@@ -1010,7 +1034,7 @@ function analyseWord(word) {
         
         statusEl.className = "status err";
         statusEl.style.display = "flex";
-        statusEl.textContent = "ERREUR — MOT-CLÉ NON DISPONIBLE";
+        statusEl.textContent = "ERREUR — COMMANDE NON DISPONIBLE";
         play(sErr);
         
         const dev = document.querySelector('.device');
@@ -1020,7 +1044,10 @@ function analyseWord(word) {
         writeConsole("[ERREUR] HORIZON — ACCÈS REFUSÉ\n[DIRECTIVE] Insérez les Modules CST.");
         
         setTimeout(() => {
-          statusEl.style.display = "none";
+          // Garde le timer visible et revient au message d'attente
+          statusEl.className = "status ok";
+          statusEl.textContent = `⏱ TEMPS RESTANT : ${Math.floor(remainingTime / 60).toString().padStart(2, '0')}:${(remainingTime % 60).toString().padStart(2, '0')}`;
+          writeConsole("[SYSTÈME] Mode Hors-Ligne actif\n[DIRECTIVE] Insérez les Modules CST.\n[LIGNE] Analyse de cohérence en attente…");
         }, 2500);
         return;
       }
@@ -1040,7 +1067,10 @@ function analyseWord(word) {
       writeConsole("[SYSTÈME] Mode Hors-Ligne actif\n[DIRECTIVE] Utilisez les Modules CST.");
       
       setTimeout(() => {
-        statusEl.style.display = "none";
+        // Garde le timer visible et revient au message d'attente
+        statusEl.className = "status ok";
+        statusEl.textContent = `⏱ TEMPS RESTANT : ${Math.floor(remainingTime / 60).toString().padStart(2, '0')}:${(remainingTime % 60).toString().padStart(2, '0')}`;
+        writeConsole("[SYSTÈME] Mode Hors-Ligne actif\n[DIRECTIVE] Insérez les Modules CST.\n[LIGNE] Analyse de cohérence en attente…");
       }, 2500);
       return;
     }
@@ -1144,6 +1174,29 @@ function fail(key) {
 btn.addEventListener('click', () => {
   const v = input.value || "";
   if (!v.trim()) {
+    // En mode hors-ligne, garde le contexte
+    if (isOfflineMode) {
+      statusEl.className = "status err";
+      statusEl.style.display = "flex";
+      statusEl.textContent = "ERREUR – AUCUNE COMMANDE FOURNIE";
+      play(sErr);
+
+      const dev = document.querySelector('.device');
+      dev.style.animation = "shake 0.28s";
+      setTimeout(() => dev.style.animation = "", 300);
+
+      writeConsole("[ERREUR] Saisie vide\n[DIRECTIVE] Insérez les Modules CST.");
+      
+      setTimeout(() => {
+        // Garde le timer visible et revient au message d'attente
+        statusEl.className = "status ok";
+        statusEl.textContent = `⏱ TEMPS RESTANT : ${Math.floor(remainingTime / 60).toString().padStart(2, '0')}:${(remainingTime % 60).toString().padStart(2, '0')}`;
+        writeConsole("[SYSTÈME] Mode Hors-Ligne actif\n[DIRECTIVE] Insérez les Modules CST.\n[LIGNE] Analyse de cohérence en attente…");
+      }, 1800);
+      return;
+    }
+    
+    // Mode normal
     statusEl.className = "status err";
     statusEl.style.display = "flex";
     statusEl.textContent = "ERREUR – AUCUN TERME FOURNI";
