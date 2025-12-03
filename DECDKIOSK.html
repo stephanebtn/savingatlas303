@@ -840,6 +840,111 @@ if (isUnlocked) {
   startPolling();
 }
 
+// ====== SÉQUENCE HORIZON (MOT-CLÉ FINAL) ======
+async function executeHorizonSequence() {
+  console.log('🌅 SÉQUENCE HORIZON DÉCLENCHÉE');
+  
+  stopTimer();
+  input.disabled = true;
+  btn.disabled = true;
+  
+  // Phase 1: Analyse des modules
+  const analysisText = `[ANALYSE] Vérification des Modules CST…`;
+  writeConsole(analysisText, false, async () => {
+    
+    // Alignement progressif
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    consoleEl.textContent += '\n[ALIGNEMENT] 1…';
+    
+    await new Promise(resolve => setTimeout(resolve, 800));
+    consoleEl.textContent += ' 2…';
+    
+    await new Promise(resolve => setTimeout(resolve, 800));
+    consoleEl.textContent += ' 3…';
+    
+    await new Promise(resolve => setTimeout(resolve, 800));
+    consoleEl.textContent += ' 4… OK';
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    consoleEl.textContent += '\n[TRAME] Fenêtre Stabilisée (Δ 0.04)';
+    
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    consoleEl.textContent += '\n[SYSTÈME] Chargement du dernier fragment…';
+    
+    // Progression du chargement
+    for (let i = 0; i <= 100; i += 5) {
+      await new Promise(resolve => setTimeout(resolve, 150));
+      consoleEl.textContent = consoleEl.textContent.split('\n').slice(0, -1).join('\n') + 
+        `\n[SYSTÈME] Chargement du dernier fragment… ${i}%`;
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Lance la vidéo finale
+    playFinalVideo();
+  });
+}
+
+// ====== LECTURE VIDÉO FINALE ======
+function playFinalVideo() {
+  console.log('🎬 LECTURE DU FRAGMENT FINAL');
+  
+  const screen = document.getElementById('screen');
+  screen.style.padding = '0';
+  
+  consoleEl.innerHTML = `
+    <video 
+      id="finalVideo" 
+      width="100%" 
+      height="100%" 
+      autoplay 
+      style="display:block; max-height:220px; object-fit:contain;"
+    >
+      <source src="audio/final_fragment.mp4" type="video/mp4" />
+      Votre navigateur ne supporte pas la lecture vidéo.
+    </video>
+  `;
+  
+  const video = document.getElementById('finalVideo');
+  
+  video.addEventListener('ended', () => {
+    finalDirectives();
+  });
+  
+  video.play().catch(e => console.error('Erreur lecture vidéo:', e));
+}
+
+// ====== DIRECTIVES FINALES ======
+async function finalDirectives() {
+  console.log('📋 DIRECTIVES FINALES');
+  
+  const directivesText = `[DIRECTIVE FINALE] Retirez les Modules CST un par un.
+[ORDRE] De droite vers la gauche.
+[RAISON] Prévention du contre-choc de Trame.
+[FENÊTRE] 20 secondes avant effondrement complet.`;
+
+  writeConsole(directivesText, false, () => {
+    // Compte à rebours de 20 secondes
+    let countdown = 20;
+    const statusEl = document.getElementById('status');
+    statusEl.className = "status err";
+    statusEl.style.display = "flex";
+    
+    const countdownInterval = setInterval(() => {
+      countdown--;
+      statusEl.textContent = `⚠ EFFONDREMENT DANS ${countdown} SECONDES`;
+      
+      if (countdown <= 0) {
+        clearInterval(countdownInterval);
+        statusEl.style.display = "none";
+        
+        // Lance la séquence de reboot finale
+        executeReboot();
+      }
+    }, 1000);
+  });
+}
+
 // ====== UI ======
 const input = document.getElementById('decodeInput');
 const btn = document.getElementById('decodeBtn');
