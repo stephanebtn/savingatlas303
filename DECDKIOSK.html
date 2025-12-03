@@ -506,6 +506,10 @@ async function enterOfflineMode() {
   console.log('📴 PASSAGE EN MODE HORS-LIGNE');
   
   isOfflineMode = true;
+  horizonEnabled = true; // 🔥 ACTIVE HORIZON IMMÉDIATEMENT
+  
+  console.log('[DEBUG] isOfflineMode:', isOfflineMode);
+  console.log('[DEBUG] horizonEnabled:', horizonEnabled);
   
   // Affiche le message
   const offlineText = `[PROTOCOL 7X-B] Détection : Effondrement de Trame
@@ -516,8 +520,7 @@ async function enterOfflineMode() {
 [LIGNE] Analyse de cohérence en attente…`;
 
   writeConsole(offlineText, false, () => {
-    // Active HORIZON et démarre le timer après l'affichage du message
-    horizonEnabled = true;
+    // Démarre le timer après l'affichage du message
     startTimer();
   });
 }
@@ -874,19 +877,32 @@ function randomGarbage(len = 80) {
 function analyseWord(word) {
   const key = word.trim().toUpperCase();
   
+  console.log('[DEBUG] Mot saisi:', key);
+  console.log('[DEBUG] isOfflineMode:', isOfflineMode);
+  console.log('[DEBUG] horizonEnabled:', horizonEnabled);
+  
   // ====== MODE HORS-LIGNE : Seul HORIZON est accepté ======
   if (isOfflineMode) {
+    console.log('[DEBUG] Mode hors-ligne actif');
+    
     if (key === "HORIZON") {
+      console.log('[DEBUG] Mot HORIZON détecté');
+      
       if (horizonEnabled) {
+        console.log('[DEBUG] HORIZON activé - Lancement de la séquence');
+        
         // Animation d'analyse avant de lancer la séquence
         writeConsole("[ANALYSE] Mot-clé HORIZON détecté...\n[VALIDATION] En cours...");
         play(sScan);
         
         setTimeout(() => {
+          console.log('[DEBUG] Appel executeHorizonSequence()');
           executeHorizonSequence();
         }, 1500);
         return;
       } else {
+        console.log('[DEBUG] HORIZON pas encore activé');
+        
         statusEl.className = "status err";
         statusEl.style.display = "flex";
         statusEl.textContent = "ERREUR — MOT-CLÉ NON DISPONIBLE";
@@ -904,6 +920,8 @@ function analyseWord(word) {
         return;
       }
     } else {
+      console.log('[DEBUG] Autre mot-clé en mode hors-ligne');
+      
       // En mode hors-ligne, tous les autres mots-clés sont désactivés
       statusEl.className = "status err";
       statusEl.style.display = "flex";
@@ -924,6 +942,8 @@ function analyseWord(word) {
   }
   
   // ====== MODE NORMAL : Analyse des mots-clés standards ======
+  console.log('[DEBUG] Mode normal');
+  
   writeConsole("[ANALYSE] Interprétation lexicale en cours...\n[CORR] " + randomGarbage(64));
   play(sScan);
 
