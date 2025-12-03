@@ -464,6 +464,12 @@ const ROUTES = {
   "ANNIVERSAIRE": "https://stephanebtn.github.io/savingatlas303/anniv0956.html"
 };
 
+// ====== ÉTAT DU TERMINAL ======
+let isOfflineMode = false;
+let horizonEnabled = false;
+let timerInterval = null;
+let remainingTime = 600; // 10 minutes en secondes
+
 // ====== AUDIO ======
 const ambience = document.getElementById("ambience");
 const fx = document.getElementById("fx");
@@ -495,7 +501,55 @@ function play(audio) {
   } catch (e) {}
 }
 
-// ====== SÉQUENCE DE REBOOT CINÉMATIQUE ======
+// ====== SÉQUENCE DE PASSAGE EN MODE HORS-LIGNE ======
+async function enterOfflineMode() {
+  console.log('📴 PASSAGE EN MODE HORS-LIGNE');
+  
+  isOfflineMode = true;
+  
+  // Affiche le message
+  const offlineText = `[PROTOCOL 7X-B] Détection : Effondrement de Trame
+[ÉTAT] Procédure d'Urgence : ACTIVÉE
+[SYSTÈME] Passage en Mode Hors-Ligne…
+
+[DIRECTIVE] Insérez les Modules CST dans l'interface.
+[LIGNE] Analyse de cohérence en attente…`;
+
+  writeConsole(offlineText, false, () => {
+    // Active HORIZON et démarre le timer après l'affichage du message
+    horizonEnabled = true;
+    startTimer();
+  });
+}
+
+// ====== TIMER ======
+function startTimer() {
+  const statusEl = document.getElementById('status');
+  statusEl.className = "status ok";
+  statusEl.style.display = "flex";
+  
+  timerInterval = setInterval(() => {
+    remainingTime--;
+    
+    const minutes = Math.floor(remainingTime / 60);
+    const seconds = remainingTime % 60;
+    statusEl.textContent = `⏱ TEMPS RESTANT : ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    
+    if (remainingTime <= 0) {
+      clearInterval(timerInterval);
+      statusEl.textContent = "⏱ TEMPS ÉCOULÉ";
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  const statusEl = document.getElementById('status');
+  statusEl.style.display = "none";
+}
 async function executeReboot() {
   console.log('🔄 DÉBUT SÉQUENCE REBOOT');
   
@@ -706,6 +760,19 @@ async function checkCommands() {
           return; // Sort de la fonction
         }
         
+        // 📴 COMMANDE SPÉCIALE: OFFLINE (passage en mode hors-ligne)
+        if (data.command === "offline") {
+          console.log(`[${checkCount}] 📴 COMMANDE OFFLINE REÇUE`);
+          
+          // Efface la commande immédiatement
+          const clearUrl = `${WORKER_URL}/audio/clear?team=${TEAM}&id=${data.id}`;
+          await fetch(clearUrl, { method: 'DELETE' });
+          
+          // Lance le passage en mode hors-ligne
+          enterOfflineMode();
+          return;
+        }
+        
         // 🎵 GESTION DES COMMANDES MULTIPLES (séparées par virgule)
         const commands = data.command.split(',');
         
@@ -805,6 +872,44 @@ function randomGarbage(len = 80) {
 }
 
 function analyseWord(word) {
+  const key = word.trim().toUpperCase();
+  
+  // ====== MODE HORS-LIGNE : Seul HORIZON est accepté ======
+  if (isOfflineMode) {
+    if (key === "HORIZON") {
+      if (horizonEnabled) {
+        executeHorizonSequence();
+        return;
+      } else {
+        statusEl.className = "status err";
+        statusEl.style.display = "flex";
+        statusEl.textContent = "ERREUR — MOT-CLÉ NON DISPONIBLE";
+        play(sErr);
+        
+        const dev = document.querySelector('.device');
+        dev.style.animation = "shake 0.28s";
+        setTimeout(() => dev.style.animation = "", 300);
+        
+        writeConsole("[ERREUR] HORIZON — ACCÈS REFUSÉ\n[DIRECTIVE] Insérez les Modules CST.");
+        return;
+      }
+    } else {
+      // En mode hors-ligne, tous les autres mots-clés sont désactivés
+      statusEl.className = "status err";
+      statusEl.style.display = "flex";
+      statusEl.textContent = "SYSTÈME HORS-LIGNE — FONCTION DÉSACTIVÉE";
+      play(sErr);
+      
+      const dev = document.querySelector('.device');
+      dev.style.animation = "shake 0.28s";
+      setTimeout(() => dev.style.animation = "", 300);
+      
+      writeConsole("[SYSTÈME] Mode Hors-Ligne actif\n[DIRECTIVE] Utilisez les Modules CST.");
+      return;
+    }
+  }
+  
+  // ====== MODE NORMAL : Analyse des mots-clés standards ======
   writeConsole("[ANALYSE] Interprétation lexicale en cours...\n[CORR] " + randomGarbage(64));
   play(sScan);
 
@@ -817,7 +922,6 @@ function analyseWord(word) {
 
   setTimeout(() => {
     clearInterval(tick);
-    const key = word.trim().toUpperCase();
     if (ROUTES[key]) success(key);
     else fail(key);
   }, 1600);
