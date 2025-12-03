@@ -331,8 +331,11 @@
         </div>
         <div class="section" style="margin-top: 20px; border-top: 2px solid var(--red); padding-top: 15px;">
           <div style="font-size: 0.9rem; color: var(--red); margin-bottom: 10px; text-align: center;">
-            ⚠️ SÉQUENCE FINALE
+            ⚠️ SÉQUENCES FINALES
           </div>
+          <button class="cmd-btn" onclick="if(confirm('Passer TOUTES les équipes en MODE HORS-LIGNE ?')) broadcastCommand('offline')" style="width: 100%; font-size: 1rem; padding: 12px; margin-bottom: 10px; background: rgba(255,170,0,0.15);">
+            📴 MODE HORS-LIGNE GÉNÉRAL
+          </button>
           <button class="cmd-btn" onclick="if(confirm('Déclencher la séquence de REBOOT finale pour TOUTES les équipes ?')) broadcastCommand('reboot')" style="width: 100%; font-size: 1.1rem; padding: 15px;">
             🔄 REBOOT GÉNÉRAL
           </button>
@@ -371,6 +374,9 @@
           </div>
 
           <div class="section" style="margin-top: 15px; border-top: 1px solid var(--green); padding-top: 10px;">
+            <button class="cmd-btn" onclick="if(confirm('Passer Team A en MODE HORS-LIGNE ?')) sendCommand('A', 'offline')" style="width: 100%; background: rgba(255,170,0,0.15); margin-bottom: 8px;">
+              📴 MODE HORS-LIGNE
+            </button>
             <button class="cmd-btn" onclick="if(confirm('Déclencher REBOOT pour Team A ?')) sendCommand('A', 'reboot')" style="width: 100%; background: rgba(0,255,0,0.15);">
               🔄 REBOOT
             </button>
@@ -410,6 +416,9 @@
           </div>
 
           <div class="section" style="margin-top: 15px; border-top: 1px solid var(--cyan); padding-top: 10px;">
+            <button class="cmd-btn" onclick="if(confirm('Passer Team B en MODE HORS-LIGNE ?')) sendCommand('B', 'offline')" style="width: 100%; background: rgba(255,170,0,0.15); margin-bottom: 8px;">
+              📴 MODE HORS-LIGNE
+            </button>
             <button class="cmd-btn" onclick="if(confirm('Déclencher REBOOT pour Team B ?')) sendCommand('B', 'reboot')" style="width: 100%; background: rgba(0,255,255,0.15);">
               🔄 REBOOT
             </button>
@@ -449,6 +458,9 @@
           </div>
 
           <div class="section" style="margin-top: 15px; border-top: 1px solid var(--orange); padding-top: 10px;">
+            <button class="cmd-btn" onclick="if(confirm('Passer Team C en MODE HORS-LIGNE ?')) sendCommand('C', 'offline')" style="width: 100%; background: rgba(255,170,0,0.15); margin-bottom: 8px;">
+              📴 MODE HORS-LIGNE
+            </button>
             <button class="cmd-btn" onclick="if(confirm('Déclencher REBOOT pour Team C ?')) sendCommand('C', 'reboot')" style="width: 100%; background: rgba(255,170,0,0.15);">
               🔄 REBOOT
             </button>
@@ -488,6 +500,9 @@
           </div>
 
           <div class="section" style="margin-top: 15px; border-top: 1px solid var(--purple); padding-top: 10px;">
+            <button class="cmd-btn" onclick="if(confirm('Passer Team D en MODE HORS-LIGNE ?')) sendCommand('D', 'offline')" style="width: 100%; background: rgba(255,170,0,0.15); margin-bottom: 8px;">
+              📴 MODE HORS-LIGNE
+            </button>
             <button class="cmd-btn" onclick="if(confirm('Déclencher REBOOT pour Team D ?')) sendCommand('D', 'reboot')" style="width: 100%; background: rgba(160,0,255,0.15);">
               🔄 REBOOT
             </button>
