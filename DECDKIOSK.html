@@ -285,6 +285,72 @@ button:disabled{
 
     @keyframes shake { 0%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(2px)}100%{transform:translateX(0)} }
 
+    @keyframes glitch {
+      0% { transform: translate(0); }
+      20% { transform: translate(-2px, 2px); }
+      40% { transform: translate(-2px, -2px); }
+      60% { transform: translate(2px, 2px); }
+      80% { transform: translate(2px, -2px); }
+      100% { transform: translate(0); }
+    }
+
+    @keyframes unstable {
+      0%, 100% { 
+        transform: translate(0, 0) rotate(0deg);
+        filter: hue-rotate(0deg);
+      }
+      10% { 
+        transform: translate(-3px, 1px) rotate(-0.5deg);
+        filter: hue-rotate(10deg);
+      }
+      20% { 
+        transform: translate(2px, -2px) rotate(0.3deg);
+        filter: hue-rotate(-5deg);
+      }
+      30% { 
+        transform: translate(-1px, 2px) rotate(-0.3deg);
+        filter: hue-rotate(15deg);
+      }
+      40% { 
+        transform: translate(3px, -1px) rotate(0.5deg);
+        filter: hue-rotate(-10deg);
+      }
+      50% { 
+        transform: translate(-2px, -2px) rotate(-0.4deg);
+        filter: hue-rotate(8deg);
+      }
+      60% { 
+        transform: translate(1px, 3px) rotate(0.2deg);
+        filter: hue-rotate(-12deg);
+      }
+      70% { 
+        transform: translate(-3px, -1px) rotate(-0.3deg);
+        filter: hue-rotate(6deg);
+      }
+      80% { 
+        transform: translate(2px, 2px) rotate(0.4deg);
+        filter: hue-rotate(-8deg);
+      }
+      90% { 
+        transform: translate(-1px, -3px) rotate(-0.2deg);
+        filter: hue-rotate(10deg);
+      }
+    }
+
+    .emergency {
+      animation: unstable 0.15s infinite;
+    }
+
+    .status.critical {
+      background: rgba(255, 0, 0, 0.3);
+      color: #f00;
+      font-size: 15px;
+      font-weight: bold;
+      text-shadow: 0 0 10px #f00;
+      border: 2px solid #f00;
+      animation: glitch 0.3s infinite;
+    }
+
     @media (min-width:680px){
       .device{ max-width:480px; }
     }
@@ -948,19 +1014,43 @@ async function finalDirectives() {
 [FENÊTRE] 20 secondes avant effondrement complet.`;
 
   writeConsole(directivesText, false, () => {
+    // 🚨 DÉCLENCHE L'ALARME
+    fx.src = 'audio/alarme.mp3';
+    fx.loop = true;
+    fx.play().catch(e => console.log("Erreur lecture alarme:", e));
+    
+    // 🔴 ACTIVE L'INSTABILITÉ VISUELLE
+    const device = document.querySelector('.device');
+    device.classList.add('emergency');
+    
     // Compte à rebours de 20 secondes
     let countdown = 20;
     const statusEl = document.getElementById('status');
-    statusEl.className = "status err";
+    statusEl.className = "status critical";
     statusEl.style.display = "flex";
     
     const countdownInterval = setInterval(() => {
       countdown--;
-      statusEl.textContent = `⚠ EFFONDREMENT DANS ${countdown} SECONDES`;
+      statusEl.textContent = `⚠ EFFONDREMENT DANS ${countdown} SECONDES ⚠`;
+      
+      // Augmente l'intensité du glitch dans les 5 dernières secondes
+      if (countdown <= 5) {
+        device.style.animation = 'unstable 0.08s infinite';
+        screen.style.animation = 'glitch 0.2s infinite';
+      }
       
       if (countdown <= 0) {
         clearInterval(countdownInterval);
         statusEl.style.display = "none";
+        
+        // Arrête l'alarme
+        fx.pause();
+        fx.loop = false;
+        
+        // Arrête les effets visuels
+        device.classList.remove('emergency');
+        device.style.animation = '';
+        screen.style.animation = '';
         
         // Lance la séquence de reboot finale
         executeReboot();
