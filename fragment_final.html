@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Transmission Finale – Agent 404</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="container">
+    <!-- Intro -->
+    <div id="intro">
+      <p id="introText">Connexion au canal HORIZON...<br><small>(Appuyez pour activer)</small></p>
+      <div class="glitch-lines"></div>
+      <audio id="introSound" src="assets/signal.mp3" preload="auto"></audio>
+    </div>
+    
+    <!-- Transmission -->
+    <div class="terminal">
+      <h1 id="title">Transmission Finale</h1>
+      <div class="player-container" id="mainContent">
+        <p>Canal : <strong>HORIZON</strong></p>
+        <video id="video" controls preload="auto" style="width: 100%; max-width: 100%;">
+          <source src="assets/final_fragment.mp4" type="video/mp4" />
+          Votre navigateur ne supporte pas la lecture vidéo.
+        </video>
+      </div>
+      
+      <!-- Consignes -->
+      <div id="endMessage" class="hidden" aria-live="polite">
+        <h3>Transmission terminée</h3>
+        <p>Retournez au terminal immédiatement.</p>
+      </div>
+    </div>
+    
+    <div class="footer">Bureau de Sauvegarde Temporelle – 2050</div>
+  </div>
+
+  <script>
+// === Configuration ===
+const WORKER_URL = "https://a303.stephane-btn.workers.dev"; // 🔧 CHANGEZ CETTE URL
+
+// === Détection de l'équipe ===
+const params = new URLSearchParams(window.location.search);
+const team = params.get("team") || "UNKNOWN";
+
+const intro = document.getElementById('intro');
+const introSound = document.getElementById('introSound');
+const mainContent = document.getElementById('mainContent');
+const title = document.getElementById('title');
+const videoMain = document.getElementById('video');
+const endMessage = document.getElementById('endMessage');
+
+let introPlayed = false;
+
+intro.addEventListener("click", async () => {
+  if (introPlayed) return;
+  introPlayed = true;
+  
+  try {
+    await introSound.play();
+  } catch (err) {
+    console.warn("Lecture intro bloquée :", err);
+  }
+  
+  introSound.addEventListener("ended", () => {
+    intro.style.opacity = 0;
+    title.style.opacity = 1;
+    
+    setTimeout(() => {
+      intro.style.display = "none";
+      mainContent.style.opacity = 1;
+      videoMain.play().catch(e => console.warn("Lecture automatique bloquée :", e));
+    }, 1500);
+  });
+});
+
+// 🎬 Quand la vidéo se termine, envoie la commande "final" au terminal
+videoMain.addEventListener("ended", async () => {
+  console.log('🎬 Vidéo terminée - Envoi commande FINAL au terminal');
+  
+  setTimeout(() => {
+    endMessage.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      endMessage.classList.add('fade-in');
+    });
+  }, 1000);
+  
+  // Envoie la commande "final" au worker pour déclencher les directives finales
+  try {
+    const response = await fetch(`${WORKER_URL}/audio/send`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ 
+        team: team, 
+        command: 'final' 
+      })
+    });
+    
+    if (response.ok) {
+      console.log('✅ Commande FINAL envoyée avec succès au terminal');
+    } else {
+      console.error('❌ Erreur envoi commande FINAL:', response.status);
+    }
+  } catch (error) {
+    console.error('❌ Erreur réseau:', error);
+  }
+});
+  </script>
+</body>
+</html>
