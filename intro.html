@@ -67,7 +67,7 @@ const team = params.get("team") || "UNKNOWN";
 
 // === Envoi WhatsApp avec cache ===
 if (team !== "UNKNOWN") {
-    const msg = encodeURIComponent(`TEAM ${team} a écouté ${fragmentName}`);
+    const msg = encodeURIComponent(`TEAM ${team} consulte ${fragmentName}`);
     
     const url = `${WORKER_URL}?phone=${PHONE}&apikey=${APIKEY}&text=${msg}&team=${team}&fragment=${fragmentId}`;
     
@@ -122,3 +122,4 @@ requestAnimationFrame(() => {
   </script>
 </body>
 </html>
+
