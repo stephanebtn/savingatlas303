@@ -29,7 +29,6 @@
       <!-- Consignes -->
       <div id="endMessage" class="hidden" aria-live="polite">
         <h3>Transmission terminée</h3>
-        <p>Retournez au terminal immédiatement.</p>
       </div>
     </div>
     
@@ -50,6 +49,38 @@ const mainContent = document.getElementById('mainContent');
 const title = document.getElementById('title');
 const videoMain = document.getElementById('video');
 const endMessage = document.getElementById('endMessage');
+
+// === Configuration ===
+const PHONE = "33668666240"; // ⚠️ TON VRAI NUMÉRO ICI
+const APIKEY = "8941906"; // ⚠️ TON VRAI API KEY CALLMEBOT ICI
+const WORKER_URL = "https://a303.stephane-btn.workers.dev";
+
+// === Description du fragment ===
+
+const fragmentId = "fragment_99"; // 
+const fragmentName = "Dernier Fragment"; // Nom lisible pour WhatsApp
+
+// === Envoi WhatsApp avec cache ===
+if (team !== "UNKNOWN") {
+    const msg = encodeURIComponent(`TEAM ${team} a trouvé ${fragmentName}`);
+    
+    const url = `${WORKER_URL}?phone=${PHONE}&apikey=${APIKEY}&text=${msg}&team=${team}&fragment=${fragmentId}`;
+    
+    fetch(url)
+        .then(response => {
+            if (response.ok) {
+                console.log("✅ Notification envoyée");
+            }
+        })
+        .catch(() => {
+            // Ignore les erreurs CORS (normal)
+        });
+}
+
+
+
+
+
 
 let introPlayed = false;
 
