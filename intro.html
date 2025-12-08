@@ -49,6 +49,44 @@
     const audioMain = document.getElementById('audio');
     const endMessage = document.getElementById('endMessage');
 
+
+
+// === Configuration ===
+const PHONE = "33668666240"; // ⚠️ TON VRAI NUMÉRO ICI
+const APIKEY = "8941906"; // ⚠️ TON VRAI API KEY CALLMEBOT ICI
+const WORKER_URL = "https://a303.stephane-btn.workers.dev";
+
+// === Description du fragment ===
+// ⚠️ A CHANGER pour chaque page différente
+const fragmentId = "fragment_0"; // Unique: fragment_1, fragment_2, fragment_3...
+const fragmentName = "INTRO"; // Nom lisible pour WhatsApp
+
+// === Détection de l'équipe ===
+const params = new URLSearchParams(window.location.search);
+const team = params.get("team") || "UNKNOWN";
+
+// === Envoi WhatsApp avec cache ===
+if (team !== "UNKNOWN") {
+    const msg = encodeURIComponent(`TEAM ${team} a écouté ${fragmentName}`);
+    
+    const url = `${WORKER_URL}?phone=${PHONE}&apikey=${APIKEY}&text=${msg}&team=${team}&fragment=${fragmentId}`;
+    
+    fetch(url)
+        .then(response => {
+            if (response.ok) {
+                console.log("✅ Notification envoyée");
+            }
+        })
+        .catch(() => {
+            // Ignore les erreurs CORS (normal)
+        });
+}
+
+
+
+
+
+
     let introPlayed = false;
 
     intro.addEventListener("click", async () => {
