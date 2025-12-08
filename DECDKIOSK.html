@@ -338,7 +338,7 @@ button:disabled{
     }
 
     .emergency {
-      animation: unstable 0.3s infinite;
+      animation: unstable 0.15s infinite;
     }
 
     .status.critical {
@@ -348,7 +348,7 @@ button:disabled{
       font-weight: bold;
       text-shadow: 0 0 10px #f00;
       border: 2px solid #f00;
-      animation: glitch 0.5s infinite;
+      animation: glitch 0.3s infinite;
     }
 
     @media (min-width:680px){
@@ -389,14 +389,14 @@ button:disabled{
         <div class="title">
           Machine d'Interprétation Lexicale
         </div>
-        <div class="subtitle">Machine non homologuée</div>
+        <div class="subtitle">Machine non homologuée - Manuels de bord restreints.</div>
       </div>
 
       <div class="screen" id="screen" aria-live="polite">
         <div class="console" id="console">
 [BOOT] Initialisation du sous-système BST-404...
 [BOOT] Chargement du dictionnaire lexical...
-//[BOOT] Chargement de l'interpréteur sémantique...
+[BOOT] Chargement de l'interpréteur sémantique...
 [BOOT] Synchronisation temporelle : stable
 [ÉTAT] Scanner prêt.
         </div>
@@ -490,23 +490,23 @@ function attemptUnlock() {
         const bootText =
           "[BOOT] Initialisation du sous-système BST-404...\n" +
           "[BOOT] Chargement du dictionnaire lexical...\n" +
-          //"[BOOT] Interpréteur sémantique opérationnel...\n" +
+          "[BOOT] Interpréteur sémantique opérationnel...\n" +
           "[BOOT] Synchronisation temporelle : OK\n" +
-          //`[SYSTÈME] Équipe détectée: ${TEAM}\n` +
-          //`[RÉSEAU] Worker: ${WORKER_URL !== "https://votre-worker.workers.dev" ? "✓ " + WORKER_URL : "⚠ Non configuré"}\n` +
+          `[SYSTÈME] Équipe détectée: ${TEAM}\n` +
+          `[RÉSEAU] Worker: ${WORKER_URL !== "https://votre-worker.workers.dev" ? "✓ " + WORKER_URL : "⚠ Non configuré"}\n` +
           "[ÉTAT] Scanner prêt.\n";
         writeConsole(bootText, true);
         input.focus();
         
-        // 🔥 DÉMARRE LE POLLING MAINTENANT
-        startPolling();
+        // Le polling est déjà démarré avant le déverrouillage
+        // Pas besoin de l'appeler à nouveau ici
       }, 500);
     }, 1000);
     
   } else {
     // Mot de passe incorrect
     unlockError.style.color = '#f00';
-    unlockError.textContent = '✗ INCORRECT - TITRE PHARE D ATLAS303';
+    unlockError.textContent = '✗ MOT DE PASSE INCORRECT';
     
     play(sErr);
     
@@ -526,9 +526,8 @@ passwordInput.addEventListener('keypress', (e) => {
 
 // ====== ROUTES (mot -> page) ======
 const ROUTES = {
-  "PAILLETTES": "https://stephanebtn.github.io/savingatlas303/854T5.html",
-  "TORNADES": "https://stephanebtn.github.io/savingatlas303/961T2.html",
-  "SAXOPHONE": "https://stephanebtn.github.io/savingatlas303/982T3.html"
+  "CECILE": "https://stephanebtn.github.io/savingatlas303/anniv0845.html",
+  "ANNIVERSAIRE": "https://stephanebtn.github.io/savingatlas303/anniv0956.html"
 };
 
 // ====== ÉTAT DU TERMINAL ======
@@ -546,7 +545,7 @@ const sErr = document.getElementById('soundError');
 const sScan = document.getElementById('soundScan');
 
 function playAmbience(n) {
-  ambience.src = `audio/amb${n}.mp3`;
+  ambience.src = `audio/ambience${n}.mp3`;
   ambience.play().catch(e => console.log("Audio play error:", e));
 }
 
@@ -919,8 +918,10 @@ function startPolling() {
   }
 }
 
-// Démarre le polling si déjà déverrouillé
-if (isUnlocked) {
+// 🔥 DÉMARRE LE POLLING IMMÉDIATEMENT (même si verrouillé)
+// Cela permet de jouer les ambiances de fond avant le déverrouillage
+if (TEAM !== "NONE") {
+  console.log('[SYSTÈME] 🎵 Démarrage du polling audio (terminal verrouillé OK)');
   startPolling();
 }
 
@@ -938,35 +939,26 @@ async function executeHorizonSequence() {
     await new Promise(resolve => setTimeout(resolve, 1000));
     consoleEl.textContent += '\n[ALIGNEMENT] 1…';
     
-    await new Promise(resolve => setTimeout(resolve, 600));
+    await new Promise(resolve => setTimeout(resolve, 800));
     consoleEl.textContent += ' 2…';
     
-    await new Promise(resolve => setTimeout(resolve, 600));
+    await new Promise(resolve => setTimeout(resolve, 800));
     consoleEl.textContent += ' 3…';
     
-    await new Promise(resolve => setTimeout(resolve, 600));
+    await new Promise(resolve => setTimeout(resolve, 800));
     consoleEl.textContent += ' 4… OK';
-
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    consoleEl.textContent += ' 5… OK';
-
-    await new Promise(resolve => setTimeout(resolve, 600));
-    consoleEl.textContent += ' 6… OK';
-
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    consoleEl.textContent += ' 7… OK';
-
+    
     await new Promise(resolve => setTimeout(resolve, 1000));
     consoleEl.textContent += '\n[TRAME] Fenêtre Stabilisée (Δ 0.04)';
     
     await new Promise(resolve => setTimeout(resolve, 1500));
-    consoleEl.textContent += '\n[SYSTÈME] Accès au dernier fragment…';
+    consoleEl.textContent += '\n[SYSTÈME] Chargement du dernier fragment…';
     
     // Progression du chargement
     for (let i = 0; i <= 100; i += 5) {
       await new Promise(resolve => setTimeout(resolve, 150));
       consoleEl.textContent = consoleEl.textContent.split('\n').slice(0, -1).join('\n') + 
-        `\n[SYSTÈME] Décryptage de l'accès… ${i}%`;
+        `\n[SYSTÈME] Chargement du dernier fragment… ${i}%`;
     }
     
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -1075,9 +1067,9 @@ async function finalDirectives() {
       // 5-1 sec : CHAOS TOTAL
       if (countdown === 5) {
         console.log('🔥 Phase 3: CHAOS TOTAL');
-        device.style.animation = 'unstable 0.1s infinite';
-        screen.style.animation = 'glitch 0.3s infinite';
-        statusEl.style.animation = 'glitch 0.4s infinite';
+        device.style.animation = 'unstable 0.08s infinite';
+        screen.style.animation = 'glitch 0.2s infinite';
+        statusEl.style.animation = 'glitch 0.3s infinite';
       }
       
       if (countdown <= 0) {
@@ -1359,19 +1351,18 @@ window.addEventListener('load', () => {
     const bootText =
       "[BOOT] Initialisation du sous-système BST-404...\n" +
       "[BOOT] Chargement du dictionnaire lexical...\n" +
-      //"[BOOT] Interpréteur sémantique opérationnel...\n" +
+      "[BOOT] Interpréteur sémantique opérationnel...\n" +
       "[BOOT] Synchronisation temporelle : OK\n" +
-     // `[SYSTÈME] Équipe détectée: ${TEAM}\n` +
-      //`[RÉSEAU] Worker: ${WORKER_URL !== "https://votre-worker.workers.dev" ? "✓ " + WORKER_URL : "⚠ Non configuré"}\n` +
+      `[SYSTÈME] Équipe détectée: ${TEAM}\n` +
+      `[RÉSEAU] Worker: ${WORKER_URL !== "https://votre-worker.workers.dev" ? "✓ " + WORKER_URL : "⚠ Non configuré"}\n` +
       "[ÉTAT] Scanner prêt.\n";
     writeConsole(bootText, true);
     
-    // Démarre aussi le polling
-    startPolling();
+    // Le polling est déjà démarré avant le déverrouillage
+    // Pas besoin de l'appeler à nouveau ici
   }
 });
 
   </script>
 </body>
 </html>
-
