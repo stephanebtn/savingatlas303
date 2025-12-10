@@ -4,79 +4,113 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Transmission Audio – Agent 404</title>
-	<link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div id="container">
-
     <!-- Intro -->
     <div id="intro">
       <p id="introText">Connexion au canal 404Δ...<br><small>(Appuyez pour activer)</small></p>
       <div class="glitch-lines"></div>
       <audio id="introSound" src="assets/signal.mp3" preload="auto"></audio>
     </div>
-
     <!-- Transmission -->
-<div class="terminal">
-    <h1 id="title">Transmission entrante</h1>
-
-    <div class="player-container" id="mainContent">
-      <p>Canal : <strong>404-Δ</strong></p>
-      <audio id="audio" controls preload="auto">
-        <source src="assets/fri85ugh12gpT4.mp3" type="audio/mpeg" />
-        Votre navigateur ne supporte pas la lecture audio.
-      </audio>
+    <div class="terminal">
+      <h1 id="title">Transmission entrante</h1>
+      <div class="player-container" id="mainContent">
+        <p>Canal : <strong>404-Δ</strong></p>
+        <audio id="audio" controls preload="auto">
+          <source src="assets/fri85ugh12gpT4.mp3" type="audio/mpeg" />
+          Votre navigateur ne supporte pas la lecture audio.
+        </audio>
+      </div>
+      <!-- Consignes -->
+      <div id="endMessage" class="hidden" aria-live="polite">
+        <h3>Vous avez trouvé un nouveau fragment !</h3>
+      </ul>
+      </div>
     </div>
-
-    <!-- Consignes -->
-    <div id="endMessage" class="hidden" aria-live="polite">
-      <h3>Vous avez trouvé le 4eme Fragment !</h3>
-    </div>
-</div>
     <div class="footer">Bureau de Sauvegarde Temporelle – 2050</div>
   </div>
-
   <script>
-    const intro = document.getElementById('intro');
-    const introSound = document.getElementById('introSound');
-    const mainContent = document.getElementById('mainContent');
-    const title = document.getElementById('title');
-    const audioMain = document.getElementById('audio');
-    const endMessage = document.getElementById('endMessage');
+// === Configuration ===
+const PHONE = "33668666240"; // ⚠️ TON VRAI NUMÉRO ICI
+const APIKEY = "8941906"; // ⚠️ TON VRAI API KEY CALLMEBOT ICI
+const WORKER_URL = "https://a303.stephane-btn.workers.dev";
 
-    let introPlayed = false;
+// === Description du fragment ===
+// ⚠️ A CHANGER pour chaque page différente
+const fragmentId = "fragment_4"; // Unique: fragment_1, fragment_2, fragment_3...
+const fragmentName = "Fragment 4"; // Nom lisible pour WhatsApp
 
-    intro.addEventListener("click", async () => {
-      if (introPlayed) return;
-      introPlayed = true;
+// === Détection de l'équipe ===
+const params = new URLSearchParams(window.location.search);
+const team = params.get("team") || "UNKNOWN";
 
-      try {
-        await introSound.play();
-      } catch (err) {
-        console.warn("Lecture intro bloquée :", err);
-      }
+const intro = document.getElementById('intro');
+const introSound = document.getElementById('introSound');
+const mainContent = document.getElementById('mainContent');
+const title = document.getElementById('title');
+const audioMain = document.getElementById('audio');
+const endMessage = document.getElementById('endMessage');
+let introPlayed = false;
 
-      introSound.addEventListener("ended", () => {
-        intro.style.opacity = 0;
-        title.style.opacity = 1;
-        setTimeout(() => {
-          intro.style.display = "none";
-          mainContent.style.opacity = 1;
-          audioMain.play().catch(e => console.warn("Lecture automatique bloquée :", e));
-        }, 1500);
-      });
-    });
+// === Fonction d'envoi de notification ===
+async function sendNotification() {
+  const text = encodeURIComponent(`🎯 Équipe ${team} vient d'écouter ${fragmentName}`);
+  const url = `${WORKER_URL}?phone=${PHONE}&apikey=${APIKEY}&text=${text}&team=${team}&fragment=${fragmentId}`;
+  
+  console.log(`📤 Envoi notification: Team ${team} - ${fragmentName}`);
+  
+  try {
+    const response = await fetch(url);
+    if (response.ok) {
+      console.log('✅ Notification envoyée avec succès');
+    } else {
+      console.error('❌ Erreur envoi notification:', response.status);
+    }
+  } catch (error) {
+    console.error('❌ Erreur réseau:', error);
+  }
+}
 
-    audioMain.addEventListener("ended", () => {
-      setTimeout(() => {
-        endMessage.classList.remove('hidden');
-requestAnimationFrame(() => {
-  endMessage.classList.add('fade-in');
+intro.addEventListener("click", async () => {
+  if (introPlayed) return;
+  introPlayed = true;
+  
+  try {
+    await introSound.play();
+  } catch (err) {
+    console.warn("Lecture intro bloquée :", err);
+  }
+  
+  introSound.addEventListener("ended", () => {
+    intro.style.opacity = 0;
+    title.style.opacity = 1;
+    setTimeout(() => {
+      intro.style.display = "none";
+      mainContent.style.opacity = 1;
+      audioMain.play().catch(e => console.warn("Lecture automatique bloquée :", e));
+    }, 1500);
+  });
 });
-      }, 1000);
+
+// 🎵 MODIFIÉ: Notification envoyée APRÈS la fin de la lecture du fragment audio
+audioMain.addEventListener("ended", () => {
+  console.log('🎵 Fragment audio terminé');
+  
+  // Affiche le message de fin
+  setTimeout(() => {
+    endMessage.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      endMessage.classList.add('fade-in');
     });
+  }, 1000);
+  
+  // 📤 Envoie la notification MAINTENANT (après la lecture)
+  sendNotification();
+});
 
   </script>
 </body>
 </html>
-
