@@ -60,22 +60,10 @@ const endMessage = document.getElementById('endMessage');
 let introPlayed = false;
 
 // === Fonction d'envoi de notification ===
+
 async function sendNotification() {
-  const text = encodeURIComponent(`🎯 Équipe ${team} vient d'écouter ${fragmentName}`);
-  const url = `${WORKER_URL}?phone=${PHONE}&apikey=${APIKEY}&text=${text}&team=${team}&fragment=${fragmentId}`;
-  
-  console.log(`📤 Envoi notification: Team ${team} - ${fragmentName}`);
-  
-  try {
-    const response = await fetch(url);
-    if (response.ok) {
-      console.log('✅ Notification envoyée avec succès');
-    } else {
-      console.error('❌ Erreur envoi notification:', response.status);
-    }
-  } catch (error) {
-    console.error('❌ Erreur réseau:', error);
-  }
+  const url = `${WORKER_URL}?team=${team}&fragment=${fragmentId}`;
+  await fetch(url);
 }
 
 intro.addEventListener("click", async () => {
