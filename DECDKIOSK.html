@@ -498,8 +498,8 @@ function attemptUnlock() {
         writeConsole(bootText, true);
         input.focus();
         
-        // 🔥 DÉMARRE LE POLLING MAINTENANT
-        startPolling();
+        // Le polling est déjà démarré avant le déverrouillage
+        // Pas besoin de l'appeler à nouveau ici
       }, 500);
     }, 1000);
     
@@ -790,6 +790,7 @@ async function executeReboot() {
   }, { once: true });
 }
 
+
 // ====== SYSTÈME DE COMMANDES À DISTANCE VIA CLOUDFLARE ======
 let lastCommandId = null;
 let checkCount = 0;
@@ -866,6 +867,31 @@ async function checkCommands() {
         for (const cmd of commands) {
           const command = cmd.trim();
           
+          // 🔄 COMMANDES SPÉCIALES dans une commande multiple
+          if (command === "reboot") {
+            console.log(`[${checkCount}] 🔄 COMMANDE REBOOT dans liste multiple`);
+            const clearUrl = `${WORKER_URL}/audio/clear?team=${TEAM}&id=${data.id}`;
+            await fetch(clearUrl, { method: 'DELETE' });
+            executeReboot();
+            return;
+          }
+          
+          if (command === "offline") {
+            console.log(`[${checkCount}] 📴 COMMANDE OFFLINE dans liste multiple`);
+            const clearUrl = `${WORKER_URL}/audio/clear?team=${TEAM}&id=${data.id}`;
+            await fetch(clearUrl, { method: 'DELETE' });
+            enterOfflineMode();
+            return;
+          }
+          
+          if (command === "final") {
+            console.log(`[${checkCount}] 🎬 COMMANDE FINAL dans liste multiple`);
+            const clearUrl = `${WORKER_URL}/audio/clear?team=${TEAM}&id=${data.id}`;
+            await fetch(clearUrl, { method: 'DELETE' });
+            finalDirectives();
+            return;
+          }
+          
           // Exécuter les commandes audio
           if (command.startsWith("amb")) {
             const num = command.replace("amb", "");
@@ -903,6 +929,10 @@ async function checkCommands() {
     console.error(`[${checkCount}] ⚠️ Erreur:`, error);
   }
 }
+
+
+
+
 
 // ====== DÉMARRAGE DU SYSTÈME DE POLLING ======
 function startPolling() {
