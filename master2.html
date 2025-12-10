@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Panneau de Contrôle - Escape Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: "Share Tech Mono", monospace;
+      background: #0a0a0a;
+      color: #0ff;
+    }
+
+    body {
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #0ff;
+    }
+
+    .title {
+      font-size: 2rem;
+      text-shadow: 0 0 15px #0ff;
+      letter-spacing: 4px;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: #099;
+    }
+
+    .config {
+      background: rgba(255,255,0,0.05);
+      border: 2px solid #ff0;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    .config input {
+      width: 100%;
+      padding: 12px;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid #0ff;
+      border-radius: 8px;
+      color: #0ff;
+      font-family: inherit;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .config button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background: rgba(0,255,255,0.2);
+      border: 1px solid #0ff;
+      border-radius: 8px;
+      color: #0ff;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .teams-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+      gap: 30px;
+    }
+
+    .team-panel {
+      background: rgba(0,255,255,0.03);
+      border: 2px solid #0ff;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 0 20px rgba(0,255,255,0.2);
+    }
+
+    .team-panel.team-a { border-color: #0f0; }
+    .team-panel.team-b { border-color: #0ff; }
+
+    .team-header {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-align: center;
+      text-shadow: 0 0 10px currentColor;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .team-a .team-header { color: #0f0; }
+    .team-b .team-header { color: #0ff; }
+
+    .refresh-btn {
+      padding: 8px 16px;
+      background: rgba(0,255,255,0.1);
+      border: 1px solid currentColor;
+      border-radius: 6px;
+      color: inherit;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .refresh-btn:hover {
+      background: rgba(0,255,255,0.2);
+    }
+
+    .tracking-section {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(0,255,255,0.3);
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .tracking-title {
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+      color: #0ff;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .tracking-entry {
+      padding: 8px 12px;
+      margin: 6px 0;
+      background: rgba(0,255,255,0.05);
+      border-left: 3px solid #0ff;
+      border-radius: 4px;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .team-a .tracking-entry { border-left-color: #0f0; }
+    .team-b .tracking-entry { border-left-color: #0ff; }
+
+    .tracking-time {
+      color: #099;
+      font-weight: bold;
+    }
+
+    .tracking-empty {
+      text-align: center;
+      color: #666;
+      padding: 20px;
+      font-style: italic;
+    }
+
+    .indices-section {
+      margin-top: 20px;
+    }
+
+    .indices-title {
+      font-size: 1rem;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .indices-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+    }
+
+    .indice-btn {
+      padding: 12px;
+      background: rgba(0,255,255,0.1);
+      border: 1px solid #0ff;
+      border-radius: 8px;
+      color: #0ff;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+
+    .indice-btn:hover {
+      background: rgba(0,255,255,0.25);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,255,255,0.4);
+    }
+
+    .team-a .indice-btn { border-color: #0f0; color: #0f0; }
+    .team-b .indice-btn { border-color: #0ff; color: #0ff; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .sending {
+      animation: pulse 0.5s ease-in-out;
+    }
+
+    .status-msg {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .status-ok {
+      background: rgba(0,255,0,0.1);
+      border: 1px solid #0f0;
+      color: #0f0;
+    }
+
+    .status-err {
+      background: rgba(255,0,0,0.1);
+      border: 1px solid #f00;
+      color: #f00;
+    }
+
+    @media (max-width: 1200px) {
+      .teams-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="title">🎮 PANNEAU DE CONTRÔLE</div>
+      <div class="subtitle">Escape Game Atlas Funky 303</div>
+    </div>
+
+    <div class="config">
+      <div style="font-size: 1.1rem; color: #ff0; margin-bottom: 10px;">⚙️ Configuration Worker</div>
+      <input type="text" id="workerUrl" placeholder="https://votre-worker.workers.dev" />
+      <button onclick="saveWorkerUrl()">💾 Sauvegarder</button>
+      <div id="workerStatus" style="margin-top: 10px; font-size: 13px;"></div>
+    </div>
+
+    <div id="mainInterface" style="display: none;">
+      <div class="teams-container">
+        <!-- TEAM A -->
+        <div class="team-panel team-a">
+          <div class="team-header">
+            <span>🟢 TEAM A</span>
+            <button class="refresh-btn" onclick="refreshTracking('A')">🔄 Actualiser</button>
+          </div>
+
+          <div class="tracking-section">
+            <div class="tracking-title">📊 Historique des Fragments</div>
+            <div id="tracking-A"></div>
+          </div>
+
+          <div class="indices-section">
+            <div class="indices-title">💡 Envoyer un Indice</div>
+            <div class="indices-grid">
+              <button class="indice-btn" onclick="sendIndice('A', 1)">Indice 1</button>
+              <button class="indice-btn" onclick="sendIndice('A', 2)">Indice 2</button>
+              <button class="indice-btn" onclick="sendIndice('A', 3)">Indice 3</button>
+              <button class="indice-btn" onclick="sendIndice('A', 4)">Indice 4</button>
+              <button class="indice-btn" onclick="sendIndice('A', 5)">Indice 5</button>
+            </div>
+            <div id="status-A" class="status-msg" style="display: none;"></div>
+          </div>
+        </div>
+
+        <!-- TEAM B -->
+        <div class="team-panel team-b">
+          <div class="team-header">
+            <span>🔵 TEAM B</span>
+            <button class="refresh-btn" onclick="refreshTracking('B')">🔄 Actualiser</button>
+          </div>
+
+          <div class="tracking-section">
+            <div class="tracking-title">📊 Historique des Fragments</div>
+            <div id="tracking-B"></div>
+          </div>
+
+          <div class="indices-section">
+            <div class="indices-title">💡 Envoyer un Indice</div>
+            <div class="indices-grid">
+              <button class="indice-btn" onclick="sendIndice('B', 1)">Indice 1</button>
+              <button class="indice-btn" onclick="sendIndice('B', 2)">Indice 2</button>
+              <button class="indice-btn" onclick="sendIndice('B', 3)">Indice 3</button>
+              <button class="indice-btn" onclick="sendIndice('B', 4)">Indice 4</button>
+              <button class="indice-btn" onclick="sendIndice('B', 5)">Indice 5</button>
+            </div>
+            <div id="status-B" class="status-msg" style="display: none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let WORKER_URL = localStorage.getItem('workerUrl') || '';
+    
+    document.getElementById('workerUrl').value = WORKER_URL;
+    checkConfiguration();
+
+    function checkConfiguration() {
+      if (WORKER_URL && WORKER_URL !== 'https://votre-worker.workers.dev') {
+        document.getElementById('mainInterface').style.display = 'block';
+        document.getElementById('workerStatus').innerHTML = '✅ Worker configuré: ' + WORKER_URL;
+        document.getElementById('workerStatus').style.color = '#0f0';
+        
+        // Rafraîchit automatiquement toutes les 10 secondes
+        setInterval(() => {
+          refreshTracking('A');
+          refreshTracking('B');
+        }, 10000);
+        
+        // Charge initial
+        refreshTracking('A');
+        refreshTracking('B');
+      } else {
+        document.getElementById('mainInterface').style.display = 'none';
+        document.getElementById('workerStatus').innerHTML = '⚠️ Worker non configuré';
+        document.getElementById('workerStatus').style.color = '#f00';
+      }
+    }
+
+    function saveWorkerUrl() {
+      const url = document.getElementById('workerUrl').value.trim();
+      if (!url) {
+        alert('Veuillez entrer une URL valide');
+        return;
+      }
+      WORKER_URL = url;
+      localStorage.setItem('workerUrl', url);
+      checkConfiguration();
+    }
+
+    async function refreshTracking(team) {
+      const container = document.getElementById(`tracking-${team}`);
+      
+      try {
+        const response = await fetch(`${WORKER_URL}/tracking/get?team=${team}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.history && data.history.length > 0) {
+          container.innerHTML = data.history.map(entry => `
+            <div class="tracking-entry">
+              <span>${entry.fragment}</span>
+              <span class="tracking-time">${entry.time}</span>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = '<div class="tracking-empty">Aucun fragment découvert</div>';
+        }
+      } catch (error) {
+        console.error(`Erreur tracking Team ${team}:`, error);
+        container.innerHTML = '<div class="tracking-empty">❌ Erreur de chargement</div>';
+      }
+    }
+
+    async function sendIndice(team, numero) {
+      const statusEl = document.getElementById(`status-${team}`);
+      statusEl.style.display = 'block';
+      statusEl.className = 'status-msg';
+      statusEl.textContent = `⚡ Envoi indice ${numero}...`;
+      
+      // Commande à envoyer : voice + numéro de l'indice
+      const command = `voice${numero}`;
+      
+      try {
+        const response = await fetch(`${WORKER_URL}/audio/send`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ team, command })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          statusEl.className = 'status-msg status-ok';
+          statusEl.textContent = `✅ Indice ${numero} envoyé`;
+        } else {
+          throw new Error('Échec envoi');
+        }
+
+        setTimeout(() => {
+          statusEl.style.display = 'none';
+        }, 3000);
+
+      } catch (error) {
+        statusEl.className = 'status-msg status-err';
+        statusEl.textContent = `❌ Erreur: ${error.message}`;
+        console.error('Erreur:', error);
+        
+        setTimeout(() => {
+          statusEl.style.display = 'none';
+        }, 3000);
+      }
+    }
+  </script>
+</body>
+</html>
