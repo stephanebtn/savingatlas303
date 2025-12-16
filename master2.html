@@ -124,13 +124,64 @@
       background: rgba(0,255,255,0.2);
     }
 
+    .score-section {
+      background: rgba(255,215,0,0.1);
+      border: 2px solid #ffd700;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .score-display {
+      font-size: 3rem;
+      color: #ffd700;
+      text-shadow: 0 0 15px #ffd700;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .time-display {
+      font-size: 1.5rem;
+      color: #ffa500;
+      text-shadow: 0 0 10px #ffa500;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+
+    .time-status {
+      font-size: 0.9rem;
+      color: #099;
+      margin-top: 5px;
+    }
+
+    .score-details {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 15px;
+      font-size: 0.9rem;
+    }
+
+    .score-item {
+      background: rgba(0,0,0,0.3);
+      padding: 8px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .score-item.positive { color: #0f0; }
+    .score-item.negative { color: #f00; }
+    .score-item.neutral { color: #ffa500; }
+
     .tracking-section {
       background: rgba(0,0,0,0.3);
       border: 1px solid rgba(0,255,255,0.3);
       border-radius: 8px;
       padding: 15px;
       margin-bottom: 20px;
-      max-height: 400px;
+      max-height: 300px;
       overflow-y: auto;
     }
 
@@ -208,15 +259,6 @@
     .team-a .indice-btn { border-color: #0f0; color: #0f0; }
     .team-b .indice-btn { border-color: #0ff; color: #0ff; }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    .sending {
-      animation: pulse 0.5s ease-in-out;
-    }
-
     .status-msg {
       margin-top: 10px;
       padding: 10px;
@@ -235,6 +277,28 @@
       background: rgba(255,0,0,0.1);
       border: 1px solid #f00;
       color: #f00;
+    }
+
+    .reset-section {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .reset-btn {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255,0,0,0.1);
+      border: 1px solid #f00;
+      border-radius: 6px;
+      color: #f00;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    .reset-btn:hover {
+      background: rgba(255,0,0,0.2);
     }
 
     @media (max-width: 1200px) {
@@ -267,13 +331,24 @@
             <button class="refresh-btn" onclick="refreshTracking('A')">🔄 Actualiser</button>
           </div>
 
+          <div class="score-section">
+            <div style="font-size: 1.2rem; color: #ffd700; margin-bottom: 5px;">🏆 SCORE</div>
+            <div class="score-display" id="score-A">0</div>
+            <div class="time-display" id="time-A">--:--</div>
+            <div class="time-status" id="time-status-A">En attente du début...</div>
+            <div class="score-details" id="score-details-A"></div>
+            <div class="reset-section">
+              <button class="reset-btn" onclick="resetIndices('A')">🔄 Réinitialiser compteur indices</button>
+            </div>
+          </div>
+
           <div class="tracking-section">
             <div class="tracking-title">📊 Historique des Fragments</div>
             <div id="tracking-A"></div>
           </div>
 
           <div class="indices-section">
-            <div class="indices-title">💡 Envoyer un Indice</div>
+            <div class="indices-title">💡 Envoyer un Indice (-4 pts)</div>
             <div class="indices-grid">
               <button class="indice-btn" onclick="sendIndice('A', 1)">Indice 1</button>
               <button class="indice-btn" onclick="sendIndice('A', 2)">Indice 2</button>
@@ -292,13 +367,24 @@
             <button class="refresh-btn" onclick="refreshTracking('B')">🔄 Actualiser</button>
           </div>
 
+          <div class="score-section">
+            <div style="font-size: 1.2rem; color: #ffd700; margin-bottom: 5px;">🏆 SCORE</div>
+            <div class="score-display" id="score-B">0</div>
+            <div class="time-display" id="time-B">--:--</div>
+            <div class="time-status" id="time-status-B">En attente du début...</div>
+            <div class="score-details" id="score-details-B"></div>
+            <div class="reset-section">
+              <button class="reset-btn" onclick="resetIndices('B')">🔄 Réinitialiser compteur indices</button>
+            </div>
+          </div>
+
           <div class="tracking-section">
             <div class="tracking-title">📊 Historique des Fragments</div>
             <div id="tracking-B"></div>
           </div>
 
           <div class="indices-section">
-            <div class="indices-title">💡 Envoyer un Indice</div>
+            <div class="indices-title">💡 Envoyer un Indice (-4 pts)</div>
             <div class="indices-grid">
               <button class="indice-btn" onclick="sendIndice('B', 1)">Indice 1</button>
               <button class="indice-btn" onclick="sendIndice('B', 2)">Indice 2</button>
@@ -315,7 +401,13 @@
 
   <script>
     let WORKER_URL = localStorage.getItem('workerUrl') || '';
-    
+
+    // Compteurs d'indices par équipe (stockés dans localStorage)
+    const indicesSent = {
+      A: parseInt(localStorage.getItem('indices_A') || '0'),
+      B: parseInt(localStorage.getItem('indices_B') || '0')
+    };
+
     document.getElementById('workerUrl').value = WORKER_URL;
     checkConfiguration();
 
@@ -352,6 +444,127 @@
       checkConfiguration();
     }
 
+    function resetIndices(team) {
+      if (confirm(`Réinitialiser le compteur d'indices pour la Team ${team} ?`)) {
+        indicesSent[team] = 0;
+        localStorage.setItem(`indices_${team}`, '0');
+        refreshTracking(team);
+      }
+    }
+
+    // ===== CALCUL DU TEMPS =====
+    function calculateGameTime(history) {
+      const fragment0 = history.find(h => h.fragment === 'fragment_0');
+      const fragmentFinal = history.find(h => h.fragment === 'fragment_final_horizon');
+      
+      if (!fragment0) {
+        return { minutes: 0, display: '--:--', status: 'En attente du début...' };
+      }
+      
+      const startTime = fragment0.timestamp;
+      const endTime = fragmentFinal ? fragmentFinal.timestamp : Date.now();
+      const elapsed = endTime - startTime;
+      const minutes = elapsed / 60000;
+      
+      const mins = Math.floor(minutes);
+      const secs = Math.floor((minutes - mins) * 60);
+      const display = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      
+      let status = fragmentFinal ? '✅ Escape terminé' : '⏱️ En cours...';
+      
+      return { minutes, display, status };
+    }
+
+    // ===== CALCUL DU SCORE =====
+    function calculateScore(history, indiceCount) {
+      let score = 0;
+      const breakdown = [];
+
+      // Points par fragment (+6 points, sauf fragment_0 et fragment_final_horizon)
+      const normalFragments = history.filter(h => 
+        h.fragment !== 'fragment_0' && 
+        h.fragment !== 'fragment_final_horizon'
+      );
+      const fragmentPoints = normalFragments.length * 6;
+      if (normalFragments.length > 0) {
+        score += fragmentPoints;
+        breakdown.push({ label: `Fragments (${normalFragments.length})`, points: fragmentPoints, positive: true });
+      }
+
+      // Fragment final HORIZON (+10 points)
+      const hasHorizon = history.some(h => h.fragment === 'fragment_final_horizon');
+      if (hasHorizon) {
+        score += 10;
+        breakdown.push({ label: 'Fragment HORIZON', points: 10, positive: true });
+      }
+
+      // Pénalité indices (-4 points par indice)
+      const indicePoints = indiceCount * -4;
+      if (indiceCount > 0) {
+        score += indicePoints;
+        breakdown.push({ label: `Indices (${indiceCount})`, points: indicePoints, positive: false });
+      }
+
+      // Bonus temps (seulement si l'escape est terminé)
+      const timeData = calculateGameTime(history);
+      const fragment0 = history.find(h => h.fragment === 'fragment_0');
+      const fragmentFinal = history.find(h => h.fragment === 'fragment_final_horizon');
+      
+      if (fragment0 && fragmentFinal) {
+        const minutes = timeData.minutes;
+        let timeBonus = 0;
+        let timeLabel = '';
+
+        if (minutes < 50) {
+          timeBonus = 20;
+          timeLabel = `Temps < 50 min`;
+        } else if (minutes < 55) {
+          timeBonus = 15;
+          timeLabel = `Temps 50-55 min`;
+        } else if (minutes < 60) {
+          timeBonus = 10;
+          timeLabel = `Temps 55-60 min`;
+        } else if (minutes < 70) {
+          timeBonus = 5;
+          timeLabel = `Temps 60-70 min`;
+        } else if (minutes < 75) {
+          timeBonus = -5;
+          timeLabel = `Temps 70-75 min`;
+        } else {
+          timeBonus = -10;
+          timeLabel = `Temps > 75 min`;
+        }
+
+        score += timeBonus;
+        breakdown.push({ 
+          label: timeLabel, 
+          points: timeBonus, 
+          positive: timeBonus >= 0 
+        });
+      }
+
+      return { total: score, breakdown, timeData };
+    }
+
+    // ===== AFFICHAGE DU SCORE =====
+    function displayScore(team, history) {
+      const scoreData = calculateScore(history, indicesSent[team]);
+      
+      document.getElementById(`score-${team}`).textContent = scoreData.total;
+      document.getElementById(`time-${team}`).textContent = scoreData.timeData.display;
+      document.getElementById(`time-status-${team}`).textContent = scoreData.timeData.status;
+      
+      const detailsHtml = scoreData.breakdown.map(item => `
+        <div class="score-item ${item.positive ? 'positive' : 'negative'}">
+          <span>${item.label}</span>
+          <span>${item.points > 0 ? '+' : ''}${item.points}</span>
+        </div>
+      `).join('');
+      
+      document.getElementById(`score-details-${team}`).innerHTML = detailsHtml;
+    }
+
+    // ===== TRACKING =====
     async function refreshTracking(team) {
       const container = document.getElementById(`tracking-${team}`);
       
@@ -371,8 +584,11 @@
               <span class="tracking-time">${entry.time}</span>
             </div>
           `).join('');
+          
+          displayScore(team, data.history);
         } else {
           container.innerHTML = '<div class="tracking-empty">Aucun fragment découvert</div>';
+          displayScore(team, []);
         }
       } catch (error) {
         console.error(`Erreur tracking Team ${team}:`, error);
@@ -380,13 +596,13 @@
       }
     }
 
+    // ===== ENVOI D'INDICES =====
     async function sendIndice(team, numero) {
       const statusEl = document.getElementById(`status-${team}`);
       statusEl.style.display = 'block';
       statusEl.className = 'status-msg';
       statusEl.textContent = `⚡ Envoi indice ${numero}...`;
       
-      // Commande à envoyer : voice + numéro de l'indice
       const command = `voice${numero}`;
       
       try {
@@ -403,8 +619,15 @@
         const data = await response.json();
 
         if (data.success) {
+          // Incrémente le compteur d'indices
+          indicesSent[team]++;
+          localStorage.setItem(`indices_${team}`, indicesSent[team].toString());
+          
           statusEl.className = 'status-msg status-ok';
-          statusEl.textContent = `✅ Indice ${numero} envoyé`;
+          statusEl.textContent = `✅ Indice ${numero} envoyé (-4 pts)`;
+          
+          // Recalcule le score
+          await refreshTracking(team);
         } else {
           throw new Error('Échec envoi');
         }
