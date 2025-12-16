@@ -20,13 +20,18 @@
       <div class="player-container" id="mainContent">
         <p>Canal : <strong>404-Δ</strong></p>
         <audio id="audio" controls preload="auto">
-          <source src="assets/dfefrg58582T5.mp3" type="audio/mpeg" />
+          <source src="assets/intro.mp3" type="audio/mpeg" />
           Votre navigateur ne supporte pas la lecture audio.
         </audio>
       </div>
       <!-- Consignes -->
       <div id="endMessage" class="hidden" aria-live="polite">
-        <h3>Vous avez trouvé le fragment 5 !</h3>
+        <h3>Consignes reçues</h3>
+      <ul>
+	<li>Décoder les verrous cryptés</li>
+        <li>Rassembler les fragments</li>
+        <li>Recréer votre musique et scellez là au dela de l'horizon 0</li>
+      </ul>
       </div>
     </div>
     <div class="footer">Bureau de Sauvegarde Temporelle – 2050</div>
@@ -37,7 +42,8 @@ const WORKER_URL = "https://a303.stephane-btn.workers.dev";
 
 // === Description du fragment ===
 // ⚠️ A CHANGER pour chaque page différente
-const fragmentId = "fragment_5"; // Unique: fragment_1, fragment_2, fragment_3...
+const fragmentId = "fragment_0"; // Unique: fragment_1, fragment_2, fragment_3...
+
 
 // === Détection de l'équipe ===
 const params = new URLSearchParams(window.location.search);
@@ -52,10 +58,12 @@ const endMessage = document.getElementById('endMessage');
 let introPlayed = false;
 
 // === Fonction d'envoi de notification ===
+
 async function sendNotification() {
   const url = `${WORKER_URL}?team=${team}&fragment=${fragmentId}`;
   await fetch(url);
 }
+
 intro.addEventListener("click", async () => {
   if (introPlayed) return;
   introPlayed = true;

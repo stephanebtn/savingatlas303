@@ -1,9 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Transmission Audio – Agent 404</title>
+  <title>Transmission – Fragment visuel</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -14,30 +14,35 @@
       <div class="glitch-lines"></div>
       <audio id="introSound" src="assets/signal.mp3" preload="auto"></audio>
     </div>
+
     <!-- Transmission -->
     <div class="terminal">
-      <h1 id="title">Transmission entrante</h1>
+      <h1 id="title">Fragment visuel reçu</h1>
+      
       <div class="player-container" id="mainContent">
         <p>Canal : <strong>404-Δ</strong></p>
-        <audio id="audio" controls preload="auto">
-          <source src="assets/dfefrg58582T5.mp3" type="audio/mpeg" />
-          Votre navigateur ne supporte pas la lecture audio.
-        </audio>
+        <img id="fragmentImage" src="assets/frgthyjyfT11.png" alt="Fragment visuel" style="max-width:100%; border-radius:12px; margin-top: 20px;">
       </div>
-      <!-- Consignes -->
-      <div id="endMessage" class="hidden" aria-live="polite">
-        <h3>Vous avez trouvé le fragment 5 !</h3>
-      </div>
+
+      <!-- Consignes (affichées automatiquement après l'image) -->
+     <div id="endMessage" class="hidden" aria-live="polite">
+        <h3>Vous avez trouvé un fragment bonus !</h3>
+     </div>
+     
     </div>
+
     <div class="footer">Bureau de Sauvegarde Temporelle – 2050</div>
-  </div>
+   </div>
+
   <script>
 // === Configuration ===
+
 const WORKER_URL = "https://a303.stephane-btn.workers.dev";
 
 // === Description du fragment ===
 // ⚠️ A CHANGER pour chaque page différente
-const fragmentId = "fragment_5"; // Unique: fragment_1, fragment_2, fragment_3...
+const fragmentId = "fragment_11"; // Unique: fragment_image_1, fragment_image_2...
+
 
 // === Détection de l'équipe ===
 const params = new URLSearchParams(window.location.search);
@@ -47,7 +52,7 @@ const intro = document.getElementById('intro');
 const introSound = document.getElementById('introSound');
 const mainContent = document.getElementById('mainContent');
 const title = document.getElementById('title');
-const audioMain = document.getElementById('audio');
+const fragmentImage = document.getElementById('fragmentImage');
 const endMessage = document.getElementById('endMessage');
 let introPlayed = false;
 
@@ -56,6 +61,7 @@ async function sendNotification() {
   const url = `${WORKER_URL}?team=${team}&fragment=${fragmentId}`;
   await fetch(url);
 }
+
 intro.addEventListener("click", async () => {
   if (introPlayed) return;
   introPlayed = true;
@@ -69,28 +75,34 @@ intro.addEventListener("click", async () => {
   introSound.addEventListener("ended", () => {
     intro.style.opacity = 0;
     title.style.opacity = 1;
+    
     setTimeout(() => {
       intro.style.display = "none";
       mainContent.style.opacity = 1;
-      audioMain.play().catch(e => console.warn("Lecture automatique bloquée :", e));
+      
+      // 🖼️ Pour un fragment image : envoi immédiat après affichage
+      setTimeout(() => {
+        console.log('🖼️ Fragment image affiché');
+        
+        // Affiche le message de fin
+        endMessage.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          endMessage.classList.add('fade-in');
+        });
+        
+        // 📤 Envoie la notification immédiatement
+        sendNotification();
+      }, 1500); // 1.5 secondes après l'affichage de l'image
+      
     }, 1500);
   });
 });
 
-// 🎵 MODIFIÉ: Notification envoyée APRÈS la fin de la lecture du fragment audio
-audioMain.addEventListener("ended", () => {
-  console.log('🎵 Fragment audio terminé');
-  
-  // Affiche le message de fin
-  setTimeout(() => {
-    endMessage.classList.remove('hidden');
-    requestAnimationFrame(() => {
-      endMessage.classList.add('fade-in');
-    });
-  }, 1000);
-  
-  // 📤 Envoie la notification MAINTENANT (après la lecture)
-  sendNotification();
+// 🔄 Alternative : Si vous préférez envoyer la notification dès que l'image est chargée
+fragmentImage.addEventListener('load', () => {
+  console.log('🖼️ Image chargée et prête');
+  // Vous pouvez décommenter la ligne ci-dessous pour envoyer dès le chargement de l'image
+  // sendNotification();
 });
 
   </script>

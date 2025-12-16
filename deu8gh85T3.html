@@ -26,22 +26,18 @@
       </div>
       <!-- Consignes -->
       <div id="endMessage" class="hidden" aria-live="polite">
-        <h3>Vous avez trouvé un nouveau fragment !</h3>
-      </ul>
-      </div>
+        <h3>Vous avez trouvé le fragment 3 !</h3>
+       </div>
     </div>
     <div class="footer">Bureau de Sauvegarde Temporelle – 2050</div>
   </div>
   <script>
 // === Configuration ===
-const PHONE = "33668666240"; // ⚠️ TON VRAI NUMÉRO ICI
-const APIKEY = "8941906"; // ⚠️ TON VRAI API KEY CALLMEBOT ICI
 const WORKER_URL = "https://a303.stephane-btn.workers.dev";
 
 // === Description du fragment ===
 // ⚠️ A CHANGER pour chaque page différente
 const fragmentId = "fragment_3"; // Unique: fragment_1, fragment_2, fragment_3...
-const fragmentName = "Fragment 3"; // Nom lisible pour WhatsApp
 
 // === Détection de l'équipe ===
 const params = new URLSearchParams(window.location.search);
@@ -57,23 +53,9 @@ let introPlayed = false;
 
 // === Fonction d'envoi de notification ===
 async function sendNotification() {
-  const text = encodeURIComponent(`🎯 Équipe ${team} vient d'écouter ${fragmentName}`);
-  const url = `${WORKER_URL}?phone=${PHONE}&apikey=${APIKEY}&text=${text}&team=${team}&fragment=${fragmentId}`;
-  
-  console.log(`📤 Envoi notification: Team ${team} - ${fragmentName}`);
-  
-  try {
-    const response = await fetch(url);
-    if (response.ok) {
-      console.log('✅ Notification envoyée avec succès');
-    } else {
-      console.error('❌ Erreur envoi notification:', response.status);
-    }
-  } catch (error) {
-    console.error('❌ Erreur réseau:', error);
-  }
+  const url = `${WORKER_URL}?team=${team}&fragment=${fragmentId}`;
+  await fetch(url);
 }
-
 intro.addEventListener("click", async () => {
   if (introPlayed) return;
   introPlayed = true;
