@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Transmission – Fragment visuel</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="container">
+    <!-- Intro -->
+    <div id="intro">
+      <p id="introText">Connexion au canal 404Δ...<br><small>(Appuyez pour activer)</small></p>
+      <div class="glitch-lines"></div>
+      <audio id="introSound" src="assets/signal.mp3" preload="auto"></audio>
+    </div>
+
+    <!-- Transmission -->
+    <div class="terminal">
+      <h1 id="title">Fragment visuel reçu</h1>
+      
+      <div class="player-container" id="mainContent">
+        <p>Canal : <strong>404-Δ</strong></p>
+        <img id="fragmentImage" src="assets/frgthpofT15.jpg" alt="Fragment visuel" style="max-width:100%; border-radius:12px; margin-top: 20px;">
+      </div>
+
+      <!-- Consignes (affichées automatiquement après l'image) -->
+     <div id="endMessage" class="hidden" aria-live="polite">
+        <h3>Vous avez trouvé un fragment bonus !</h3>
+     </div>
+     
+    </div>
+
+    <div class="footer">Bureau de Sauvegarde Temporelle – 2050</div>
+   </div>
+
+  <script>
+// === Configuration ===
+
+const WORKER_URL = "https://a303.stephane-btn.workers.dev";
+
+// === Description du fragment ===
+// ⚠️ A CHANGER pour chaque page différente
+const fragmentId = "fragment_15"; // Unique: fragment_image_1, fragment_image_2...
+
+
+// === Détection de l'équipe ===
+const params = new URLSearchParams(window.location.search);
+const team = params.get("team") || "UNKNOWN";
+
+const intro = document.getElementById('intro');
+const introSound = document.getElementById('introSound');
+const mainContent = document.getElementById('mainContent');
+const title = document.getElementById('title');
+const fragmentImage = document.getElementById('fragmentImage');
+const endMessage = document.getElementById('endMessage');
+let introPlayed = false;
+
+// === Fonction d'envoi de notification ===
+async function sendNotification() {
+  const url = `${WORKER_URL}?team=${team}&fragment=${fragmentId}`;
+  await fetch(url);
+}
+
+intro.addEventListener("click", async () => {
+  if (introPlayed) return;
+  introPlayed = true;
+  
+  try {
+    await introSound.play();
+  } catch (err) {
+    console.warn("Lecture intro bloquée :", err);
+  }
+  
+  introSound.addEventListener("ended", () => {
+    intro.style.opacity = 0;
+    title.style.opacity = 1;
+    
+    setTimeout(() => {
+      intro.style.display = "none";
+      mainContent.style.opacity = 1;
+      
+      // 🖼️ Pour un fragment image : envoi immédiat après affichage
+      setTimeout(() => {
+        console.log('🖼️ Fragment image affiché');
+        
+        // Affiche le message de fin
+        endMessage.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          endMessage.classList.add('fade-in');
+        });
+        
+        // 📤 Envoie la notification immédiatement
+        sendNotification();
+      }, 1500); // 1.5 secondes après l'affichage de l'image
+      
+    }, 1500);
+  });
+});
+
+// 🔄 Alternative : Si vous préférez envoyer la notification dès que l'image est chargée
+fragmentImage.addEventListener('load', () => {
+  console.log('🖼️ Image chargée et prête');
+  // Vous pouvez décommenter la ligne ci-dessous pour envoyer dès le chargement de l'image
+  // sendNotification();
+});
+
+  </script>
+</body>
+</html>
