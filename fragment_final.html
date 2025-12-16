@@ -50,39 +50,25 @@ const title = document.getElementById('title');
 const videoMain = document.getElementById('video');
 const endMessage = document.getElementById('endMessage');
 
-// === Configuration ===
-const PHONE = "33668666240"; // ⚠️ TON VRAI NUMÉRO ICI
-const APIKEY = "8941906"; // ⚠️ TON VRAI API KEY CALLMEBOT ICI
-const WORKER_URL = "https://a303.stephane-btn.workers.dev";
-
-// === Description du fragment ===
-
-const fragmentId = "fragment_99"; // 
-const fragmentName = "Dernier Fragment"; // Nom lisible pour WhatsApp
-
-// === Envoi WhatsApp avec cache ===
-if (team !== "UNKNOWN") {
-    const msg = encodeURIComponent(`TEAM ${team} a trouvé ${fragmentName}`);
-    
-    const url = `${WORKER_URL}?phone=${PHONE}&apikey=${APIKEY}&text=${msg}&team=${team}&fragment=${fragmentId}`;
-    
-    fetch(url)
-        .then(response => {
-            if (response.ok) {
-                console.log("✅ Notification envoyée");
-            }
-        })
-        .catch(() => {
-            // Ignore les erreurs CORS (normal)
-        });
-}
-
-
-
-
-
-
 let introPlayed = false;
+
+// === Fonction d'enregistrement du fragment final ===
+async function registerFinalFragment() {
+  const url = `${WORKER_URL}?team=${team}&fragment=fragment_final_horizon`;
+  
+  console.log(`📤 Enregistrement fragment final: Team ${team}`);
+  
+  try {
+    const response = await fetch(url);
+    if (response.ok) {
+      console.log('✅ Fragment final enregistré');
+    } else {
+      console.error('❌ Erreur enregistrement:', response.status);
+    }
+  } catch (error) {
+    console.error('❌ Erreur réseau:', error);
+  }
+}
 
 intro.addEventListener("click", async () => {
   if (introPlayed) return;
@@ -106,7 +92,7 @@ intro.addEventListener("click", async () => {
   });
 });
 
-// 🎬 Quand la vidéo se termine, envoie la commande "final" au terminal
+// 🎬 Quand la vidéo se termine
 videoMain.addEventListener("ended", async () => {
   console.log('🎬 Vidéo terminée - Envoi commande FINAL au terminal');
   
@@ -117,7 +103,10 @@ videoMain.addEventListener("ended", async () => {
     });
   }, 1000);
   
-  // Envoie la commande "final" au worker pour déclencher les directives finales
+  // 📝 Enregistre le fragment final dans le worker (pour le scoring)
+  await registerFinalFragment();
+  
+  // 📤 Envoie la commande "final" au worker pour déclencher les directives finales
   try {
     const response = await fetch(`${WORKER_URL}/audio/send`, {
       method: 'POST',
