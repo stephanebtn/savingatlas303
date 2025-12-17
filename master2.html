@@ -338,7 +338,7 @@
             <div class="time-status" id="time-status-A">En attente du début...</div>
             <div class="score-details" id="score-details-A"></div>
             <div class="reset-section">
-              <button class="reset-btn" onclick="resetIndices('A')">🔄 Réinitialiser compteur indices</button>
+              <button class="reset-btn" onclick="resetTeam('A')">🗑️ Réinitialiser l'équipe complète</button>
             </div>
           </div>
 
@@ -374,7 +374,7 @@
             <div class="time-status" id="time-status-B">En attente du début...</div>
             <div class="score-details" id="score-details-B"></div>
             <div class="reset-section">
-              <button class="reset-btn" onclick="resetIndices('B')">🔄 Réinitialiser compteur indices</button>
+              <button class="reset-btn" onclick="resetTeam('B')">🗑️ Réinitialiser l'équipe complète</button>
             </div>
           </div>
 
@@ -444,11 +444,42 @@
       checkConfiguration();
     }
 
-    function resetIndices(team) {
-      if (confirm(`Réinitialiser le compteur d'indices pour la Team ${team} ?`)) {
+    async function resetTeam(team) {
+      if (!confirm(`⚠️ ATTENTION ⚠️\n\nCette action va :\n- Supprimer tous les fragments de la Team ${team}\n- Réinitialiser le compteur d'indices\n- Remettre le score à zéro\n\nContinuer ?`)) {
+        return;
+      }
+      
+      try {
+        // Récupère d'abord la liste de tous les fragments
+        const response = await fetch(`${WORKER_URL}/tracking/get?team=${team}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.history && data.history.length > 0) {
+          // Supprime chaque fragment du worker
+          for (const entry of data.history) {
+            const deleteUrl = `${WORKER_URL}/tracking/delete?team=${team}&fragment=${entry.fragment}`;
+            await fetch(deleteUrl, { method: 'DELETE' });
+            console.log(`🗑️ Fragment supprimé: ${entry.fragment}`);
+          }
+        }
+        
+        // Réinitialise le compteur d'indices
         indicesSent[team] = 0;
         localStorage.setItem(`indices_${team}`, '0');
-        refreshTracking(team);
+        
+        // Rafraîchit l'affichage
+        await refreshTracking(team);
+        
+        alert(`✅ Team ${team} réinitialisée avec succès`);
+        
+      } catch (error) {
+        console.error(`Erreur réinitialisation Team ${team}:`, error);
+        alert(`❌ Erreur lors de la réinitialisation: ${error.message}`);
       }
     }
 
