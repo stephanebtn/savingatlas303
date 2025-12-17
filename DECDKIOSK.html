@@ -529,8 +529,9 @@ const ROUTES = {
   "PAILLETTES": "https://stephanebtn.github.io/savingatlas303/dfefrg58582T5.html",
   "TORNADES": "https://stephanebtn.github.io/savingatlas303/kfr8fe84T2.html",
   "SAXOPHONE": "https://stephanebtn.github.io/savingatlas303/deu8gh85T3.html",
-  "DISTORTION":"https://stephanebtn.github.io/savingatlas303/frgthyjyfT11.html",
-  "BUREAU DES DISTORTION":"https://stephanebtn.github.io/savingatlas303/frgthyjyfT11.html",
+  "DISTORSION":"https://stephanebtn.github.io/savingatlas303/frgthyjyfT11.html",
+   "DISTORSIONS":"https://stephanebtn.github.io/savingatlas303/frgthyjyfT11.html",
+  "BUREAU DES DISTORSIONS":"https://stephanebtn.github.io/savingatlas303/frgthyjyfT11.html",
   "TEMPS":"https://stephanebtn.github.io/savingatlas303/degrgthyhyT12.html",
   "TRIANGULER":"https://stephanebtn.github.io/savingatlas303/frgthjyutkjkT13.html"
 };
@@ -630,6 +631,15 @@ function stopTimer() {
 }
 async function executeReboot() {
   console.log('🔄 DÉBUT SÉQUENCE REBOOT');
+   
+
+// 🔇 ARRÊTE TOUS LES SONS EN COURS
+  ambience.pause();
+  ambience.currentTime = 0;
+  fx.pause();
+  fx.currentTime = 0;
+  voice.pause();
+  voice.currentTime = 0;
   
   const wrapper = document.querySelector('.wrapper');
   const device = document.querySelector('.device');
@@ -669,8 +679,15 @@ async function executeReboot() {
   
   let noiseInterval = setInterval(() => {
     let noise = '';
-    for (let i = 0; i < 1200; i++) {
-      noise += String.fromCharCode(Math.random() > 0.5 ? 9608 : 9617);
+    // Calcule le nombre de lignes et colonnes pour remplir l'écran
+    const cols = Math.floor(screen.offsetWidth / 10); // ~10px par caractère
+    const rows = Math.floor(screen.offsetHeight / 20); // ~20px par ligne
+    
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        noise += String.fromCharCode(Math.random() > 0.5 ? 9608 : 9617);
+      }
+      noise += '\n'; // Retour à la ligne
     }
     consoleEl.textContent = noise;
   }, 50);
