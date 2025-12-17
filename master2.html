@@ -578,14 +578,25 @@
         const data = await response.json();
         
         if (data.history && data.history.length > 0) {
-          container.innerHTML = data.history.map(entry => `
+          // Convertit les timestamps en heure française
+          const historyWithFrenchTime = data.history.map(entry => ({
+            ...entry,
+            time: new Date(entry.timestamp).toLocaleTimeString('fr-FR', {
+              timeZone: 'Europe/Paris',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit'
+            })
+          }));
+          
+          container.innerHTML = historyWithFrenchTime.map(entry => `
             <div class="tracking-entry">
               <span>${entry.fragment}</span>
               <span class="tracking-time">${entry.time}</span>
             </div>
           `).join('');
           
-          displayScore(team, data.history);
+          displayScore(team, historyWithFrenchTime);
         } else {
           container.innerHTML = '<div class="tracking-empty">Aucun fragment découvert</div>';
           displayScore(team, []);
