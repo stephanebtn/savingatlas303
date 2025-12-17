@@ -589,8 +589,8 @@ async function enterOfflineMode() {
   input.placeholder = "COMMANDE DE VALIDATION";
   
   // Affiche le message
-  const offlineText = `[PROTOCOL 7X-B] Détection : Effondrement de Trame
-[ÉTAT] Procédure d'Urgence : ACTIVÉE
+  const offlineText = `[PROTOCOL 7X-B] EFFONDREMENT DE LA TRAME DÉTECTÉE
+[ÉTAT] Procédure d'Urgence ACTIVÉE
 [SYSTÈME] Passage en Mode Hors-Ligne…
 
 [DIRECTIVE] Insérez les Modules CST dans l'interface.
@@ -793,7 +793,7 @@ async function executeReboot() {
   consoleEl.style.alignItems = 'center';
   consoleEl.style.justifyContent = 'center';
   
-  consoleEl.innerHTML = 'Veuillez patienter . . .<br><br>Décryption en cours . . .<br><br><span style="animation: blink 1s infinite;">█</span>';
+  consoleEl.innerHTML = 'Veuillez patienter . . .<br><br>Décryption en cours . . .<br><br><br><br><span style="animation: blink 1s infinite;">█</span>';
   await new Promise(resolve => setTimeout(resolve, 3000));
   
   // ========================================
@@ -801,7 +801,7 @@ async function executeReboot() {
   // ========================================
   console.log('🎙️ Phase 7: Message final');
   
-  consoleEl.innerHTML = '[ TRANSMISSION EN COURS ]<br><br><span style="animation: blink 1s infinite;">█</span>';
+  consoleEl.innerHTML = '[ TRANSMISSION EN COURS ]<br><br><br><br><span style="animation: blink 1s infinite;">█</span>';
   
   voice.src = 'audio/final_message.mp3';
   voice.play().catch(() => {});
@@ -1121,14 +1121,14 @@ async function finalDirectives() {
       countdown--;
       statusEl.textContent = `⚠ EFFONDREMENT DANS ${countdown} SECONDES ⚠`;
       
-      // 10-5 sec : Instabilité modérée
-      if (countdown === 10) {
+      // -5 sec : Instabilité modérée
+      if (countdown === 5) {
         console.log('⚠️ Phase 2: Instabilité modérée');
         device.classList.add('emergency');
       }
       
       // 5-1 sec : CHAOS TOTAL
-      if (countdown === 5) {
+      if (countdown === 2) {
         console.log('🔥 Phase 3: CHAOS TOTAL');
         device.style.animation = 'unstable 0.1s infinite';
         screen.style.animation = 'glitch 0.3s infinite';
