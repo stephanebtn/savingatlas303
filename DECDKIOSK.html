@@ -800,10 +800,11 @@ async function executeReboot() {
   consoleEl.style.textAlign = 'center';
   consoleEl.style.fontSize = '1.1rem';
   consoleEl.style.display = 'flex';
+  consoleEl.style.flexDirection = 'column';
   consoleEl.style.alignItems = 'center';
   consoleEl.style.justifyContent = 'center';
   
-  consoleEl.innerHTML = 'Veuillez patienter . . .<br><br>Décryption en cours . . .<br><br><div style="display: block; width: 100%;"><span style="animation: blink 1s infinite;">█</span></div>';
+  consoleEl.innerHTML = '<div>Veuillez patienter . . .</div><br><div>Décryption en cours . . .</div><br><div style="width: 100%; text-align: center;"><span style="animation: blink 1s infinite;">█</span></div>';
   await new Promise(resolve => setTimeout(resolve, 3000));
   
   // ========================================
@@ -811,18 +812,22 @@ async function executeReboot() {
   // ========================================
   console.log('🎙️ Phase 7: Message final');
   
-  consoleEl.innerHTML = '[ TRANSMISSION EN COURS ]<br><br><div style="display: block; width: 100%;"><span style="animation: blink 1s infinite;">█</span></div>';
+  // S'assure que le texte est bien centré
+  consoleEl.style.display = 'flex';
+  consoleEl.style.flexDirection = 'column';
+  consoleEl.style.alignItems = 'center';
+  consoleEl.style.justifyContent = 'center';
+  
+  consoleEl.innerHTML = '<div style="text-align: center;">[ TRANSMISSION EN COURS ]</div><br><div style="width: 100%; text-align: center;"><span style="animation: blink 1s infinite;">█</span></div>';
   
   voice.src = 'audio/final_message.mp3';
   voice.play().catch(() => {});
   
   // Optionnel: Réinitialiser l'interface après le message
   voice.addEventListener('ended', () => {
-    consoleEl.innerHTML = '[ FIN DE TRANSMISSION ]<br><br>— Agent 404 —';
+    consoleEl.innerHTML = '<div style="text-align: center;">[ FIN DE TRANSMISSION ]<br><br>— Agent 404 —</div>';
   }, { once: true });
 }
-
-
 
 
 
