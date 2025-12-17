@@ -632,7 +632,6 @@ function stopTimer() {
 }
 
 
-// Remplacez la fonction executeReboot() dans votre fichier DECDKIOSK_V39.html par celle-ci :
 
 async function executeReboot() {
   console.log('🔄 DÉBUT SÉQUENCE REBOOT');
@@ -678,6 +677,12 @@ async function executeReboot() {
   screen.style.height = '100%';
   screen.style.border = 'none';
   screen.style.borderRadius = '0';
+  screen.style.minHeight = 'unset';
+  
+  // Important : retire les limites de hauteur du console
+  consoleEl.style.maxHeight = 'none';
+  consoleEl.style.height = '100%';
+  consoleEl.style.overflow = 'hidden';
   
   // Génère le bruit visuel
   consoleEl.innerHTML = '';
@@ -798,7 +803,7 @@ async function executeReboot() {
   consoleEl.style.alignItems = 'center';
   consoleEl.style.justifyContent = 'center';
   
-  consoleEl.innerHTML = 'Veuillez patienter, décryption en cours . . .<br><br><div style="text-align: center; margin-top: 10px;"><span style="animation: blink 1s infinite;">█</span></div>';
+  consoleEl.innerHTML = 'Veuillez patienter . . .<br><br>Décryption en cours . . .<br><br><div style="display: block; width: 100%;"><span style="animation: blink 1s infinite;">█</span></div>';
   await new Promise(resolve => setTimeout(resolve, 3000));
   
   // ========================================
@@ -806,7 +811,7 @@ async function executeReboot() {
   // ========================================
   console.log('🎙️ Phase 7: Message final');
   
-  consoleEl.innerHTML = '[ TRANSMISSION EN COURS ]<br><br><div style="text-align: center; margin-top: 10px;"><span style="animation: blink 1s infinite;">█</span></div>';
+  consoleEl.innerHTML = '[ TRANSMISSION EN COURS ]<br><br><div style="display: block; width: 100%;"><span style="animation: blink 1s infinite;">█</span></div>';
   
   voice.src = 'audio/final_message.mp3';
   voice.play().catch(() => {});
@@ -816,6 +821,8 @@ async function executeReboot() {
     consoleEl.innerHTML = '[ FIN DE TRANSMISSION ]<br><br>— Agent 404 —';
   }, { once: true });
 }
+
+
 
 
 
