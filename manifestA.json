@@ -1,10 +1,12 @@
 {
-  "name": "Machine d'Interprétation Lexicale",
-  "short_name": "BST-404",
-  "start_url": "DECDKIOSKA.html",
+  "name": "TIL BST-404",
+  "short_name": "TIL BST-404",
+  "description": "Terminal d'interpretation lexicale",
+  "start_url": "./DECDKIOSKA.html?team=A",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#00ffff",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "icon-192.png",
