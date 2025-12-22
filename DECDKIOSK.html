@@ -396,9 +396,8 @@ button:disabled{
         <div class="console" id="console">
 [BOOT] Initialisation du sous-système BST-404...
 [BOOT] Chargement du dictionnaire lexical...
-//[BOOT] Chargement de l'interpréteur sémantique...
-[BOOT] Synchronisation temporelle : stable
 [ÉTAT] Scanner prêt.
+
         </div>
       </div>
 
@@ -428,12 +427,15 @@ button:disabled{
   <audio id="soundError" src="assets/error.mp3" preload="auto"></audio>
   <audio id="soundScan" src="assets/scan.mp3" preload="auto"></audio>
   
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script>
+
+
 
 // ====== CONFIGURATION ======
 const urlParams = new URLSearchParams(location.search);
 const TEAM = urlParams.get("team") || "NONE";
+//const TEAM = "A";
 
 // 🔧 CONFIGUREZ VOTRE URL WORKER ICI
 const WORKER_URL = "https://a303.stephane-btn.workers.dev";
@@ -452,6 +454,53 @@ const passwordInput = document.getElementById('passwordInput');
 const unlockBtn = document.getElementById('unlockBtn');
 const unlockError = document.getElementById('unlockError');
 const lockIcon = document.getElementById('lockIcon');
+
+let horizonFirstAttempt = false; // Permet de tracker le premier essai
+
+// ====== SYSTÈME DE WAKE LOCK (EMPÊCHE LA MISE EN VEILLE) ======
+let wakeLock = null;
+
+async function requestWakeLock() {
+  if ('wakeLock' in navigator) {
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      console.log('🔆 Wake Lock activé - L\'écran restera allumé');
+      
+      // Réactive le Wake Lock si l'onglet redevient visible
+      wakeLock.addEventListener('release', () => {
+        console.log('🔅 Wake Lock désactivé');
+      });
+    } catch (err) {
+      console.error('❌ Erreur Wake Lock:', err);
+    }
+  } else {
+    console.warn('⚠️ Wake Lock API non supportée sur cet appareil');
+  }
+}
+
+// Réactive le Wake Lock quand la page redevient visible
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'visible' && wakeLock !== null) {
+    await requestWakeLock();
+  }
+});
+
+// Active le Wake Lock au chargement de la page
+window.addEventListener('load', () => {
+  requestWakeLock();
+});
+
+// Active aussi le Wake Lock après déverrouillage du terminal
+// Modifiez la partie du code de déverrouillage :
+// Cherchez cette ligne dans votre code :
+//   isUnlocked = true;
+// Et ajoutez juste après :
+//   requestWakeLock();
+
+
+
+
+
 
 let isUnlocked = !IS_LOCKED; // Si pas verrouillé, déjà déverrouillé
 
@@ -506,7 +555,7 @@ function attemptUnlock() {
   } else {
     // Mot de passe incorrect
     unlockError.style.color = '#f00';
-    unlockError.textContent = '✗ INCORRECT - TITRE PHARE D ATLAS303';
+    unlockError.textContent = '✗ INCORRECT - OEUVRE MAJEUR D ATLAS303';
     
     play(sErr);
     
@@ -590,9 +639,7 @@ async function enterOfflineMode() {
   
   // Affiche le message
   const offlineText = `[PROTOCOL 7X-B] EFFONDREMENT DE LA TRAME DÉTECTÉE
-[ÉTAT] Procédure d'Urgence ACTIVÉE
-[SYSTÈME] Passage en Mode Hors-Ligne…
-
+[ÉTAT] Procédure d'urgence activée, passage en Mode Hors-Ligne…
 [DIRECTIVE] Insérez les Modules CST dans l'interface.
 [LIGNE] Analyse de cohérence en attente…`;
 
@@ -608,6 +655,11 @@ function startTimer() {
   statusEl.className = "status ok";
   statusEl.style.display = "flex";
   
+  // Affichage initial
+  const minutes = Math.floor(remainingTime / 60);
+  const seconds = remainingTime % 60;
+  statusEl.textContent = `⏱ TEMPS RESTANT : ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  
   timerInterval = setInterval(() => {
     remainingTime--;
     
@@ -621,6 +673,7 @@ function startTimer() {
     }
   }, 1000);
 }
+
 
 function stopTimer() {
   if (timerInterval) {
@@ -770,7 +823,6 @@ async function executeReboot() {
   const diagnosticLines = [
    
     	'> Agent 404 . . . . . . . . . . . . . . .  [ INJOIGNABLE ]',
- 	'> Sous-système 304D00E . . . . . . . . . . [ ACTIF ]',
    	'> Nouvelle trame temporelle détectée . . . [ 2050-Ω ]',
     '',
     '',
@@ -1116,7 +1168,7 @@ async function finalDirectives() {
   
   const directivesText = `[DIRECTIVE FINALE] Retirez les Modules CST un par un.
 [ORDRE] De droite vers la gauche.
-[RAISON] Prévention du contre-choc de Trame.
+//[RAISON] Prévention du contre-choc de Trame.
 [FENÊTRE] 20 secondes avant effondrement complet.`;
 
   writeConsole(directivesText, false, () => {
@@ -1139,14 +1191,14 @@ async function finalDirectives() {
       countdown--;
       statusEl.textContent = `⚠ EFFONDREMENT DANS ${countdown} SECONDES ⚠`;
       
-      // -5 sec : Instabilité modérée
-      if (countdown === 5) {
+      // -6 sec : Instabilité modérée
+      if (countdown === 6) {
         console.log('⚠️ Phase 2: Instabilité modérée');
         device.classList.add('emergency');
       }
       
-      // 5-1 sec : CHAOS TOTAL
-      if (countdown === 2) {
+      // 3-1 sec : CHAOS TOTAL
+      if (countdown === 3) {
         console.log('🔥 Phase 3: CHAOS TOTAL');
         device.style.animation = 'unstable 0.1s infinite';
         screen.style.animation = 'glitch 0.3s infinite';
@@ -1216,14 +1268,75 @@ function analyseWord(word) {
   console.log('[DEBUG] horizonEnabled:', horizonEnabled);
   
   // ====== MODE HORS-LIGNE : Seul HORIZON est accepté ======
-  if (isOfflineMode) {
+    if (isOfflineMode) {
     console.log('[DEBUG] Mode hors-ligne actif');
     
     if (key === "HORIZON") {
       console.log('[DEBUG] Mot HORIZON détecté');
       
       if (horizonEnabled) {
-        console.log('[DEBUG] HORIZON activé - Lancement de la séquence');
+        console.log('[DEBUG] HORIZON activé');
+        
+        // Vérifie si c'est le premier essai ET s'il reste plus de 90 secondes
+        if (!horizonFirstAttempt && remainingTime > 90) {
+          console.log('[DEBUG] Premier essai avec temps > 90s - Échec d\'alignement');
+          horizonFirstAttempt = true;
+          
+          // Animation d'analyse avant le message d'erreur
+          writeConsole("[ANALYSE] Mot-clé HORIZON détecté...\n[VALIDATION] En cours...");
+          play(sScan);
+          
+          setTimeout(async () => {
+            // Début de la séquence de vérification
+            const analysisText = `[ANALYSE] Vérification des Modules CST…`;
+            writeConsole(analysisText, false, async () => {
+              
+              // Alignement progressif
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              consoleEl.textContent += '\n[ALIGNEMENT] 1…';
+              
+              await new Promise(resolve => setTimeout(resolve, 600));
+              consoleEl.textContent += ' 2…';
+              
+              await new Promise(resolve => setTimeout(resolve, 600));
+              consoleEl.textContent += ' 3…';
+              
+              await new Promise(resolve => setTimeout(resolve, 600));
+              consoleEl.textContent += ' 4…';
+              
+              // INTERRUPTION
+              await new Promise(resolve => setTimeout(resolve, 800));
+              play(sErr);
+              
+              statusEl.className = "status err";
+              statusEl.style.display = "flex";
+              statusEl.textContent = "DÉFAUT D'ALIGNEMENT DÉTECTÉ";
+              
+              const errorText = `\n\n[ERREUR] Défaut d'alignement des Modules CST détecté
+[STATUT] Commande.......OK
+[STATUT] ORDRE CST......OK
+[STATUT] ALIGNEMENT.....KO
+[ACTION] Corrigez l'alignement et saisissez la commande à nouveau`;
+              
+              writeConsole(consoleEl.textContent + errorText, false, () => {
+                setTimeout(() => {
+                  // Revient au mode attente avec le timer
+                  statusEl.className = "status ok";
+                  const minutes = Math.floor(remainingTime / 60);
+                  const seconds = remainingTime % 60;
+                  statusEl.textContent = `⏱ TEMPS RESTANT : ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                  
+                  writeConsole("[SYSTÈME] Mode Hors-Ligne actif\n[DIRECTIVE] Corrigez l'alignement des Modules CST\n[COMMANDE] Saisissez HORIZON à nouveau");
+                }, 3000);
+              });
+            });
+          }, 1500);
+          
+          return;
+        }
+        
+        // Deuxième essai OU temps < 90 secondes : validation normale
+        console.log('[DEBUG] Validation normale - Lancement de la séquence');
         
         // Animation d'analyse avant de lancer la séquence
         writeConsole("[ANALYSE] Mot-clé HORIZON détecté...\n[VALIDATION] En cours...");
@@ -1234,6 +1347,7 @@ function analyseWord(word) {
           executeHorizonSequence();
         }, 1500);
         return;
+        
       } else {
         console.log('[DEBUG] HORIZON pas encore activé');
         
@@ -1347,11 +1461,16 @@ function success(key) {
           qrTimeout = null;
         }
 
-        qrTimeout = setTimeout(() => {
-          statusEl.style.display = "none";
-          writeConsole("[ÉTAT] Scanner prêt.\n");
-          qrTimeout = null;
-        }, 30000);
+	qrTimeout = setTimeout(() => {
+  	statusEl.style.display = "none";
+
+  	// Réinitialisation de la saisie
+  	input.value = "";
+  	input.focus();
+
+  	writeConsole("[ÉTAT] TIL disponible pour d’autres entrées.\n");
+  	qrTimeout = null;
+	}, 30000);
 
       }, 250);
     }
@@ -1433,8 +1552,8 @@ window.addEventListener('load', () => {
       "[BOOT] Initialisation du sous-système BST-404...\n" +
       "[BOOT] Chargement du dictionnaire lexical...\n" +
       //"[BOOT] Interpréteur sémantique opérationnel...\n" +
-      "[BOOT] Synchronisation temporelle : OK\n" +
-     // `[SYSTÈME] Équipe détectée: ${TEAM}\n` +
+      //"[BOOT] Synchronisation temporelle : OK\n" +
+      // `[SYSTÈME] Équipe détectée: ${TEAM}\n` +
       //`[RÉSEAU] Worker: ${WORKER_URL !== "https://votre-worker.workers.dev" ? "✓ " + WORKER_URL : "⚠ Non configuré"}\n` +
       "[ÉTAT] Scanner prêt.\n";
     writeConsole(bootText, true);
