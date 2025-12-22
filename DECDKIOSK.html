@@ -407,7 +407,7 @@ button:disabled{
         </div>
 
         <div class="row">
-          <input id="decodeInput" type="text" placeholder="ENTRER LE MOT-CLÉ" autocomplete="off" />
+          <input id="decodeInput" type="text" placeholder="ENTRER UN MOT-CLÉ" autocomplete="off" />
         </div>
         <div class="row">
           <button id="decodeBtn">DÉCODER</button>
@@ -1116,13 +1116,13 @@ function generateFinalQRCode() {
   }
 
   writeConsole(
-    "[FRAGMENT] HORIZON – AUTHENTIFICATION VALIDÉE\n" +
+    "[FRAGMENT] HORIZON — AUTHENTIFICATION VALIDÉE\n" +
     "[QRCODE] Fragment final encodé…",
     false,
     () => {
       setTimeout(() => {
         // Construction de l'URL du fragment final avec team
-        let targetUrl = "https://stephanebtn.github.io/savingatlas303/fragment_final.html"; // 🔧 CHANGEZ CETTE URL
+        let targetUrl = "https://stephanebtn.github.io/savingatlas303/fragment_final.html";
         if (TEAM !== "NONE") {
           targetUrl += (targetUrl.includes('?') ? '&' : '?') + `team=${TEAM}`;
         }
@@ -1144,6 +1144,11 @@ function generateFinalQRCode() {
         });
 
         currentInterval = null;
+
+        // 🔄 Pour le fragment final, on garde le bouton DÉCODER désactivé
+        // (pas de retour possible ici car c'est la fin)
+        btn.disabled = true;
+        btn.style.opacity = "0.3";
 
         // Pas de timeout automatique, on attend la commande "final"
       }, 250);
@@ -1415,10 +1420,11 @@ function analyseWord(word) {
   }, 1600);
 }
 
+
 function success(key) {
   statusEl.className = "status ok";
   statusEl.style.display = "flex";
-  statusEl.textContent = "TERME AUTHENTIFIÉ – GÉNÉRATION DU QRCODE";
+  statusEl.textContent = "TERME AUTHENTIFIÉ — GÉNÉRATION DU QRCODE";
   play(sOk);
 
   if (currentInterval) {
@@ -1427,7 +1433,7 @@ function success(key) {
   }
 
   writeConsole(
-    "[TERME] " + key + " – AUTHENTIFICATION VALIDÉE\n" +
+    "[TERME] " + key + " — AUTHENTIFICATION VALIDÉE\n" +
     "[QRCODE] Fragment encodé…",
     false,
     () => {
@@ -1441,7 +1447,7 @@ function success(key) {
         consoleEl.innerHTML =
           "<div id='qrWrap' style='display:flex;justify-content:center;margin:10px 0;'></div>" +
           "\n[SCANNER] Présentez un appareil compatible.\n" +
-          "[TEMPS] Retour automatique dans 30 secondes…";
+          "[RETOUR] Utilisez le bouton ci-dessous pour revenir…";
 
         let qrDiv = document.getElementById('qrWrap');
 
@@ -1456,26 +1462,74 @@ function success(key) {
 
         currentInterval = null;
 
+        // 🔄 MODIFICATION : Change le bouton en mode RETOUR
+        btn.textContent = "RETOUR";
+        btn.style.background = "rgba(255,165,0,0.15)";
+        btn.style.borderColor = "#ffa500";
+        btn.style.color = "#ffa500";
+        
+        // Variable pour tracker l'état du bouton
+        let isReturnMode = true;
+        
+        // Gestionnaire temporaire pour le retour
+        const returnHandler = () => {
+          if (isReturnMode) {
+            // Annule le timeout automatique
+            if (qrTimeout) {
+              clearTimeout(qrTimeout);
+              qrTimeout = null;
+            }
+            
+            // Réinitialise l'interface
+            resetToIdle();
+          }
+        };
+        
+        // Remplace temporairement le gestionnaire de clic
+        btn.removeEventListener('click', returnHandler); // Au cas où
+        btn.addEventListener('click', returnHandler, { once: true });
+
+        // Timeout automatique (30 secondes)
         if (qrTimeout) {
           clearTimeout(qrTimeout);
           qrTimeout = null;
         }
 
-	qrTimeout = setTimeout(() => {
-  	statusEl.style.display = "none";
-
-  	// Réinitialisation de la saisie
-  	input.value = "";
-  	input.focus();
-
-  	writeConsole("[ÉTAT] TIL disponible pour d’autres entrées.\n");
-  	qrTimeout = null;
-	}, 30000);
+        qrTimeout = setTimeout(() => {
+          isReturnMode = false;
+          resetToIdle();
+          qrTimeout = null;
+        }, 30000);
 
       }, 250);
     }
   );
 }
+
+
+
+function resetToIdle() {
+  // Réinitialise le bouton
+  btn.textContent = "DÉCODER";
+  btn.style.background = "rgba(0,255,255,0.12)";
+  btn.style.borderColor = "var(--cyan)";
+  btn.style.color = "var(--cyan)";
+  
+  // Cache le statut
+  statusEl.style.display = "none";
+  
+  // Affiche le message de veille
+  writeConsole("[ÉTAT] Scanner prêt.\n");
+  
+  // Vide l'input
+  input.value = "";
+  input.focus();
+}
+
+
+
+
+
 
 function fail(key) {
   statusEl.className = "status err";
