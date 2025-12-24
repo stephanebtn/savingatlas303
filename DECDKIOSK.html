@@ -673,42 +673,53 @@ async function enterOfflineMode() {
 
 // ====== TIMER ======
 
-
 function startTimer() {
   const statusEl = document.getElementById('status');
   statusEl.className = "status ok";
   statusEl.style.display = "flex";
-  
-  // Affichage initial
-  const minutes = Math.floor(remainingTime / 60);
-  const seconds = remainingTime % 60;
-  statusEl.textContent = `⏱ TEMPS RESTANT : ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  
-  timerInterval = setInterval(() => {
-    remainingTime--;
-    
+
+  const alarmSound = new Audio("audio/alarm.mp3");
+  let alarmPlayed = false;
+
+  function updateDisplay() {
     const minutes = Math.floor(remainingTime / 60);
     const seconds = remainingTime % 60;
     statusEl.textContent = `⏱ TEMPS RESTANT : ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    
+  }
+
+  updateDisplay();
+
+  timerInterval = setInterval(() => {
+    remainingTime--;
+
+    // 🔔 Déclenchement de l’alarme à 20 secondes
+    if (remainingTime === 20 && !alarmPlayed) {
+      alarmPlayed = true;
+      writeConsole("[ALERTE] Effondrement de trame imminent…", true);
+      alarmSound.play().catch(() => {});
+    }
+
+    updateDisplay();
+
     if (remainingTime <= 0) {
       clearInterval(timerInterval);
       timerInterval = null;
-      
-      // 🔥 TEMPS ÉCOULÉ : Lance le reboot alternatif
+
       console.log('⏱️ TEMPS ÉCOULÉ - Lancement reboot alternatif');
       statusEl.textContent = "⏱ TEMPS ÉCOULÉ";
-      
-      // Message avant le reboot
-      writeConsole("[TEMPS] Délai dépassé\n[SYSTÈME] Lancement de la procédure d'urgence...", false, () => {
-        setTimeout(() => {
-          executeRebootAlternatif();
-        }, 2000);
-      });
+
+      writeConsole(
+        "[TEMPS] Délai dépassé\n[SYSTÈME] Lancement de la procédure d'urgence...",
+        false,
+        () => {
+          setTimeout(() => {
+            executeRebootAlternatif();
+          }, 2000);
+        }
+      );
     }
   }, 1000);
 }
-
 
 function stopTimer() {
   if (timerInterval) {
