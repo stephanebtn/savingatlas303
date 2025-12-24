@@ -456,6 +456,8 @@ const unlockError = document.getElementById('unlockError');
 const lockIcon = document.getElementById('lockIcon');
 
 let horizonFirstAttempt = false; // Permet de tracker le premier essai
+let isReturnMode = false;
+
 
 // ====== SYSTÈME DE WAKE LOCK (EMPÊCHE LA MISE EN VEILLE) ======
 let wakeLock = null;
@@ -586,6 +588,26 @@ const ROUTES = {
   "TRIANGULER":"https://stephanebtn.github.io/savingatlas303/frgthjyutkjkT13.html"
 };
 
+
+// 🎨 COULEURS DES QR CODES
+// Vous pouvez utiliser : "#0ff" (cyan), "#f0f" (magenta), "#ff0" (jaune), 
+// "#0f0" (vert), "#f00" (rouge), "#fa0" (orange), etc.
+const QR_COLORS = {
+  "PAILLETTES": "#d672ff",           // VIOLET ECHO
+  "TORNADES": "#3284ff",              // BLEU RESONNANCE
+  "SAXOPHONE": "#3284ff",             // BLEU RESONNANCE
+  "DISTORSION": "#d672ff",            // VIOLET ECHO
+  "DISTORSIONS": "#d672ff",           // VIOLET ECHO
+  "BUREAU DES DISTORSIONS": "#d672ff", // VIOLET ECHO
+  "TEMPS": "#d672ff",                 // VIOLET ECHO
+  "CRASHATLAS": "#d672ff",            // VIOLET ECHO
+  "TRIANGULER": "#d672ff"             // VIOLET ECHO
+};
+
+const QR_DEFAULT_COLOR = "#3fac7d"; // 
+
+
+
 // ====== ÉTAT DU TERMINAL ======
 let isOfflineMode = false;
 let horizonEnabled = false;
@@ -650,6 +672,8 @@ async function enterOfflineMode() {
 }
 
 // ====== TIMER ======
+
+
 function startTimer() {
   const statusEl = document.getElementById('status');
   statusEl.className = "status ok";
@@ -669,7 +693,18 @@ function startTimer() {
     
     if (remainingTime <= 0) {
       clearInterval(timerInterval);
+      timerInterval = null;
+      
+      // 🔥 TEMPS ÉCOULÉ : Lance le reboot alternatif
+      console.log('⏱️ TEMPS ÉCOULÉ - Lancement reboot alternatif');
       statusEl.textContent = "⏱ TEMPS ÉCOULÉ";
+      
+      // Message avant le reboot
+      writeConsole("[TEMPS] Délai dépassé\n[SYSTÈME] Lancement de la procédure d'urgence...", false, () => {
+        setTimeout(() => {
+          executeRebootAlternatif();
+        }, 2000);
+      });
     }
   }, 1000);
 }
@@ -876,6 +911,197 @@ async function executeReboot() {
   voice.play().catch(() => {});
   
   // Optionnel: Réinitialiser l'interface après le message
+  voice.addEventListener('ended', () => {
+    consoleEl.innerHTML = '<div style="text-align: center;">[ FIN DE TRANSMISSION ]<br><br>— Agent 404 —</div>';
+  }, { once: true });
+}
+
+async function executeRebootAlternatif() {
+  console.log('🔄 DÉBUT SÉQUENCE REBOOT ALTERNATIF (Temps écoulé)');
+  
+  // 🔇 ARRÊTE TOUS LES SONS EN COURS
+  ambience.pause();
+  ambience.currentTime = 0;
+  fx.pause();
+  fx.currentTime = 0;
+  voice.pause();
+  voice.currentTime = 0;
+  
+  console.log('🔇 Sons d\'ambiance arrêtés');
+  
+  const wrapper = document.querySelector('.wrapper');
+  const device = document.querySelector('.device');
+  const screen = document.getElementById('screen');
+  const consoleEl = document.getElementById('console');
+  
+  // Désactive tous les contrôles
+  input.disabled = true;
+  btn.disabled = true;
+  
+  // ========================================
+  // PHASE 1: BRUIT STATIQUE (5 secondes)
+  // ========================================
+  console.log('📺 Phase 1: Bruit statique');
+  
+  // Cache tout sauf l'écran
+  document.querySelector('.header').style.display = 'none';
+  document.querySelector('.controls').style.display = 'none';
+  document.querySelector('.footer').style.display = 'none';
+  document.querySelector('.team-indicator').style.display = 'none';
+  document.querySelector('.lock-icon').style.display = 'none';
+  
+  // Agrandit l'écran pour prendre tout l'espace
+  device.style.width = '100vw';
+  device.style.maxWidth = '100vw';
+  device.style.height = '100vh';
+  device.style.padding = '0';
+  device.style.border = 'none';
+  screen.style.width = '100%';
+  screen.style.height = '100%';
+  screen.style.border = 'none';
+  screen.style.borderRadius = '0';
+  screen.style.minHeight = 'unset';
+  
+  // Important : retire les limites de hauteur du console
+  consoleEl.style.maxHeight = 'none';
+  consoleEl.style.height = '100%';
+  consoleEl.style.overflow = 'hidden';
+  
+  // Génère le bruit visuel
+  consoleEl.innerHTML = '';
+  screen.style.background = 'rgba(255,255,255,0.1)';
+  
+  let noiseInterval = setInterval(() => {
+    let noise = '';
+    const cols = Math.floor(screen.offsetWidth / 10);
+    const rows = Math.floor(screen.offsetHeight / 20);
+    
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        noise += String.fromCharCode(Math.random() > 0.5 ? 9608 : 9617);
+      }
+      noise += '\n';
+    }
+    consoleEl.textContent = noise;
+  }, 50);
+  
+  // Son de bruit statique
+  fx.src = 'audio/static.mp3';
+  fx.loop = true;
+  fx.play().catch(() => {});
+  
+  await new Promise(resolve => setTimeout(resolve, 5000));
+  
+  // ========================================
+  // PHASE 2: ÉCRAN NOIR + CURSEUR (5 secondes)
+  // ========================================
+  console.log('⚫ Phase 2: Écran noir + curseur');
+  clearInterval(noiseInterval);
+  fx.pause();
+  fx.loop = false;
+  
+  screen.style.background = '#000';
+  consoleEl.innerHTML = '<span style="animation: blink 1s infinite;">█</span>';
+  
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  await new Promise(resolve => setTimeout(resolve, 5000));
+  
+  // ========================================
+  // PHASE 3: MESSAGES CENTRÉS
+  // ========================================
+  console.log('💫 Phase 3: Messages système');
+  
+  consoleEl.style.display = 'flex';
+  consoleEl.style.alignItems = 'center';
+  consoleEl.style.justifyContent = 'center';
+  consoleEl.style.textAlign = 'center';
+  consoleEl.style.fontSize = '1.2rem';
+  consoleEl.style.height = '100%';
+  
+  // Message 1
+  consoleEl.innerHTML = 'Anomalie temporelle détectée . . .';
+  await new Promise(resolve => setTimeout(resolve, 3000));
+  
+  // Message 2
+  consoleEl.innerHTML = 'Séquence de réinitialisation enclenchée . . .';
+  await new Promise(resolve => setTimeout(resolve, 3000));
+  
+  // Message 3: Écran noir + curseur
+  consoleEl.innerHTML = '<span style="animation: blink 1s infinite;">█</span>';
+  await new Promise(resolve => setTimeout(resolve, 3000));
+  
+  // ========================================
+  // PHASE 4: DIAGNOSTIC
+  // ========================================
+  console.log('🔍 Phase 4: Diagnostic');
+  
+  consoleEl.style.fontSize = '1rem';
+  consoleEl.style.textAlign = 'left';
+  consoleEl.style.padding = '40px';
+  
+  const diagnosticLines = [
+    '> Agent 404 . . . . . . . . . . . . . . .  [ INJOIGNABLE ]',
+    '> Nouvelle trame temporelle détectée . . . [ 2050-Ω ]',
+    '',
+    '',
+    'Transmission du dernier message de l\'Agent 404',
+  ];
+  
+  consoleEl.innerHTML = '';
+  for (let i = 0; i < diagnosticLines.length; i++) {
+    consoleEl.innerHTML += diagnosticLines[i] + '\n';
+    await new Promise(resolve => setTimeout(resolve, 800));
+  }
+  
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  
+  // ========================================
+  // PHASE 5: ÉCRAN NOIR
+  // ========================================
+  console.log('⚫ Phase 5: Écran noir');
+  consoleEl.innerHTML = '';
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  
+  // ========================================
+  // PHASE 6: DÉCRYPTAGE (3 sec avec curseur clignotant)
+  // ========================================
+  console.log('🔓 Phase 6: Décryptage');
+  
+  consoleEl.style.textAlign = 'center';
+  consoleEl.style.fontSize = '1.1rem';
+  consoleEl.style.display = 'flex';
+  consoleEl.style.flexDirection = 'column';
+  consoleEl.style.alignItems = 'center';
+  consoleEl.style.justifyContent = 'center';
+  
+  consoleEl.innerHTML = '<div>Veuillez patienter . . .</div><br><div>Décryption en cours . . .</div><br><div style="width: 100%; text-align: center;"><span style="animation: blink 1s infinite;">█</span></div>';
+  await new Promise(resolve => setTimeout(resolve, 3000));
+  
+  // ========================================
+  // PHASE 7: MESSAGE AUDIO ALTERNATIF (final_alternatif.mp3)
+  // ========================================
+  console.log('🎙️ Phase 7: Message final alternatif');
+  
+  consoleEl.style.display = 'flex';
+  consoleEl.style.flexDirection = 'column';
+  consoleEl.style.alignItems = 'center';
+  consoleEl.style.justifyContent = 'center';
+  
+  consoleEl.innerHTML = '<div style="text-align: center;">[ TRANSMISSION EN COURS ]</div><br><div style="width: 100%; text-align: center;"><span style="animation: blink 1s infinite;">█</span></div>';
+  
+  // 🎵 FICHIER AUDIO ALTERNATIF
+  voice.src = 'audio/final_alternatif.mp3';
+  voice.play().catch(() => {});
+  
+  // Fin de transmission
   voice.addEventListener('ended', () => {
     consoleEl.innerHTML = '<div style="text-align: center;">[ FIN DE TRANSMISSION ]<br><br>— Agent 404 —</div>';
   }, { once: true });
@@ -1102,6 +1328,7 @@ async function executeHorizonSequence() {
 }
 
 // ====== GÉNÉRATION DU QR CODE FINAL ======
+
 function generateFinalQRCode() {
   console.log('📱 GÉNÉRATION QR CODE FINAL');
   
@@ -1145,8 +1372,9 @@ function generateFinalQRCode() {
 
         currentInterval = null;
 
-        // 🔄 Pour le fragment final, on garde le bouton DÉCODER désactivé
+        // 🔄 Pour le fragment final, on désactive le bouton
         // (pas de retour possible ici car c'est la fin)
+        isReturnMode = false;
         btn.disabled = true;
         btn.style.opacity = "0.3";
 
@@ -1155,6 +1383,7 @@ function generateFinalQRCode() {
     }
   );
 }
+
 
 // ====== DIRECTIVES FINALES ======
 async function finalDirectives() {
@@ -1421,6 +1650,9 @@ function analyseWord(word) {
 }
 
 
+
+
+
 function success(key) {
   statusEl.className = "status ok";
   statusEl.style.display = "flex";
@@ -1444,6 +1676,9 @@ function success(key) {
           targetUrl += (targetUrl.includes('?') ? '&' : '?') + `team=${TEAM}`;
         }
 
+        // 🎨 Récupère la couleur pour ce mot-clé
+        const qrColor = QR_COLORS[key] || QR_DEFAULT_COLOR;
+
         consoleEl.innerHTML =
           "<div id='qrWrap' style='display:flex;justify-content:center;margin:10px 0;'></div>" +
           "\n[SCANNER] Présentez un appareil compatible.\n" +
@@ -1451,43 +1686,31 @@ function success(key) {
 
         let qrDiv = document.getElementById('qrWrap');
 
+        // 🎨 Génère le QR code avec la couleur associée
         new QRCode(qrDiv, {
           text: targetUrl,
           width: 190,
           height: 190,
-          colorDark: "#0ff",
-          colorLight: "#000",
+          colorDark: qrColor,      // ← Couleur du QR code
+          colorLight: "#000",      // Fond noir
           correctLevel: QRCode.CorrectLevel.H
         });
 
         currentInterval = null;
 
         // 🔄 MODIFICATION : Change le bouton en mode RETOUR
+        isReturnMode = true;
         btn.textContent = "RETOUR";
         btn.style.background = "rgba(255,165,0,0.15)";
         btn.style.borderColor = "#ffa500";
         btn.style.color = "#ffa500";
         
-        // Variable pour tracker l'état du bouton
-        let isReturnMode = true;
-        
-        // Gestionnaire temporaire pour le retour
-        const returnHandler = () => {
-          if (isReturnMode) {
-            // Annule le timeout automatique
-            if (qrTimeout) {
-              clearTimeout(qrTimeout);
-              qrTimeout = null;
-            }
-            
-            // Réinitialise l'interface
-            resetToIdle();
-          }
-        };
-        
-        // Remplace temporairement le gestionnaire de clic
-        btn.removeEventListener('click', returnHandler); // Au cas où
-        btn.addEventListener('click', returnHandler, { once: true });
+        // 🔒 Masque la zone de saisie et le texte d'instruction
+        input.style.display = "none";
+        const instructionText = document.querySelector('.controls div[style*="font-size:13px"]');
+        if (instructionText) {
+          instructionText.style.display = "none";
+        }
 
         // Timeout automatique (30 secondes)
         if (qrTimeout) {
@@ -1496,7 +1719,6 @@ function success(key) {
         }
 
         qrTimeout = setTimeout(() => {
-          isReturnMode = false;
           resetToIdle();
           qrTimeout = null;
         }, 30000);
@@ -1507,27 +1729,31 @@ function success(key) {
 }
 
 
-
 function resetToIdle() {
-  // Réinitialise le bouton
+  console.log('🔄 Réinitialisation interface');
+
+  isReturnMode = false;
+
+  // 🔁 RÉAFFICHAGE DES ÉLÉMENTS MASQUÉS
+  input.style.display = "block";
+
+  const instructionText = document.querySelector('.controls div[style*="font-size:13px"]');
+  if (instructionText) {
+    instructionText.style.display = "block";
+  }
+
   btn.textContent = "DÉCODER";
   btn.style.background = "rgba(0,255,255,0.12)";
   btn.style.borderColor = "var(--cyan)";
   btn.style.color = "var(--cyan)";
-  
-  // Cache le statut
+
   statusEl.style.display = "none";
-  
-  // Affiche le message de veille
+
   writeConsole("[ÉTAT] Scanner prêt.\n");
-  
-  // Vide l'input
+
   input.value = "";
   input.focus();
 }
-
-
-
 
 
 
@@ -1549,14 +1775,33 @@ function fail(key) {
   }, 2500);
 }
 
+
+
+
 btn.addEventListener('click', () => {
+  // Si en mode retour, on réinitialise
+  if (isReturnMode) {
+    console.log('🔙 Retour demandé');
+    
+    // Annule le timeout automatique
+    if (qrTimeout) {
+      clearTimeout(qrTimeout);
+      qrTimeout = null;
+    }
+    
+    // Réinitialise l'interface
+    resetToIdle();
+    return; // Important : on sort de la fonction
+  }
+  
+  // Sinon, comportement normal de décodage
   const v = input.value || "";
   if (!v.trim()) {
     // En mode hors-ligne, garde le contexte
     if (isOfflineMode) {
       statusEl.className = "status err";
       statusEl.style.display = "flex";
-      statusEl.textContent = "ERREUR – AUCUNE COMMANDE FOURNIE";
+      statusEl.textContent = "ERREUR — AUCUNE COMMANDE FOURNIE";
       play(sErr);
 
       const dev = document.querySelector('.device');
@@ -1577,7 +1822,7 @@ btn.addEventListener('click', () => {
     // Mode normal
     statusEl.className = "status err";
     statusEl.style.display = "flex";
-    statusEl.textContent = "ERREUR – AUCUN TERME FOURNI";
+    statusEl.textContent = "ERREUR — AUCUN TERME FOURNI";
     play(sErr);
 
     const dev = document.querySelector('.device');
@@ -1593,6 +1838,8 @@ btn.addEventListener('click', () => {
   }
   analyseWord(v);
 });
+
+
 
 input.addEventListener('keypress', (e) => {
   if (e.key === "Enter") btn.click();
