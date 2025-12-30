@@ -647,16 +647,19 @@ function play(audio) {
 
 // ====== SÉQUENCE DE PASSAGE EN MODE HORS-LIGNE ======
 async function enterOfflineMode() {
-  console.log('📴 PASSAGE EN MODE HORS-LIGNE');
+  console.log('🔴 PASSAGE EN MODE HORS-LIGNE');
   
   isOfflineMode = true;
-  horizonEnabled = true; // 🔥 ACTIVE HORIZON IMMÉDIATEMENT
+  horizonEnabled = true;
   
   console.log('[DEBUG] isOfflineMode:', isOfflineMode);
   console.log('[DEBUG] horizonEnabled:', horizonEnabled);
   
   // Change les textes de l'interface pour le mode hors-ligne
-  document.querySelector('.controls div[style*="font-size:13px"]').textContent = "Saisir la commande de validation";
+  const instructionDiv = document.querySelector('.controls div[style*="font-size:13px"]');
+  if (instructionDiv) {
+    instructionDiv.textContent = "Saisir la commande de validation";
+  }
   input.placeholder = "COMMANDE DE VALIDATION";
   
   // Affiche le message
@@ -665,10 +668,11 @@ async function enterOfflineMode() {
 [DIRECTIVE] Insérez les Modules CST dans l'interface.
 [LIGNE] Analyse de cohérence en attente…`;
 
-  writeConsole(offlineText, false, () => {
-    // Démarre le timer après l'affichage du message
-    startTimer();
-  });
+  // 🔥 FIX : Démarre le timer IMMÉDIATEMENT, pas après writeConsole
+  startTimer();
+  
+  // Puis affiche le message (l'animation d'écriture se fait en parallèle du timer)
+  writeConsole(offlineText, false);
 }
 
 // ====== TIMER ======
